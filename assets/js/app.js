@@ -19,6 +19,12 @@ document.getElementById("save-journal").addEventListener("click", () => {
     const creditAccount = document.getElementById("je-credit-account").value;  // 貸方科目
     const creditAmount = Number(document.getElementById("je-credit-amount").value); // 貸方金額
 
+    // ★ 空欄チェック（どれか1つでも空なら止める）
+if (!date || !debitAccount || !creditAccount || !debitAmount || !creditAmount) {
+    alert("未入力の項目があります");
+    return; // ここで処理を止める
+}
+ 
     // -----------------------------------------
     // 仕訳データを journal.js の形式に組み立て
     // -----------------------------------------
