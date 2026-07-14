@@ -1,0 +1,77 @@
+/* assets/css/login.css */
+
+/* 背景（NetSuite風の濃い青） */
+body {
+    margin: 0;
+    font-family: "Segoe UI", sans-serif;
+    background: #0b2a4a; /* NetSuiteのログイン画面の青 */
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/* ログインカード */
+.login-card {
+    background: #fff;
+    padding: 40px 32px;
+    width: 100%;
+    max-width: 420px;
+    border-radius: 12px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+}
+
+/* タイトル */
+.login-title {
+    margin: 0 0 30px 0;
+    font-size: 24px;
+    font-weight: 600;
+    text-align: center;
+}
+
+/* 入力フォーム */
+.input-row {
+    margin-bottom: 22px;
+    display: flex;
+    flex-direction: column;
+}
+
+.input-row label {
+    font-size: 14px;
+    margin-bottom: 6px;
+    color: #333;
+}
+
+.input-row input {
+    padding: 12px 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 15px;
+}
+
+/* ログインボタン */
+.primary-btn {
+    width: 100%;
+    background: #2f6fed;
+    color: #fff;
+    border: none;
+    padding: 14px;
+    font-size: 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: 0.2s;
+}
+
+.primary-btn:hover {
+    background: #1f5bd1;
+}
+
+/* サブテキスト（必要なら） */
+.login-sub {
+    margin-top: 18px;
+    font-size: 13px;
+    text-align: center;
+    color: #ddd;
+}
