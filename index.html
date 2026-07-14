@@ -1,1 +1,63 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>会計システム</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
 
+    <header>
+        <h1>会計システム（MVP）</h1>
+    </header>
+
+    <main>
+
+        <!-- 仕訳入力フォーム -->
+        <section id="journal-input">
+            <h2>仕訳入力</h2>
+
+            <div class="input-row">
+                <label>日付</label>
+                <input type="date" id="je-date">
+            </div>
+
+            <div class="input-row">
+                <label>借方科目</label>
+                <input type="text" id="je-debit-account">
+                <label>金額</label>
+                <input type="number" id="je-debit-amount">
+            </div>
+
+            <div class="input-row">
+                <label>貸方科目</label>
+                <input type="text" id="je-credit-account">
+                <label>金額</label>
+                <input type="number" id="je-credit-amount">
+            </div>
+
+            <button id="save-journal">仕訳を保存</button>
+        </section>
+
+        <!-- 試算表 -->
+        <section id="trial-balance">
+            <h2>試算表</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>科目</th>
+                        <th>借方合計</th>
+                        <th>貸方合計</th>
+                    </tr>
+                </thead>
+                <tbody id="tb-body">
+                    <!-- JavaScriptで追加 -->
+                </tbody>
+            </table>
+        </section>
+
+    </main>
+
+    <script src="assets/js/app.js"></script>
+</body>
+</html>
