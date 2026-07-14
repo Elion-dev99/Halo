@@ -7,15 +7,30 @@
 </head>
 <body>
 
-    <header>
-        <h1>会計システム Halo</h1>
-    </header>
+    <!-- ============================
+         左サイドバー（Netsuite風）
+    ============================= -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">Halo</div>
 
-    <main>
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="#journal-input">仕訳入力</a></li>
+                <li><a href="#trial-balance">試算表</a></li>
+                <li><a href="#">総勘定元帳</a></li>
+                <li><a href="#">設定</a></li>
+            </ul>
+        </nav>
+    </aside>
 
-        <!-- 仕訳入力フォーム -->
-        <section id="journal-input">
-            <h2>仕訳入力</h2>
+    <!-- ============================
+         メインコンテンツ
+    ============================= -->
+    <main class="main-content">
+
+        <!-- 仕訳入力フォーム（カード） -->
+        <section id="journal-input" class="card">
+            <h2 class="card-title">仕訳入力</h2>
 
             <div class="input-row">
                 <label>日付</label>
@@ -36,13 +51,14 @@
                 <input type="number" id="je-credit-amount">
             </div>
 
-            <button id="save-journal">仕訳を保存</button>
+            <button id="save-journal" class="primary-btn">仕訳を保存</button>
         </section>
 
-        <!-- 試算表 -->
-        <section id="trial-balance">
-            <h2>試算表</h2>
-            <table>
+        <!-- 試算表（カード＋テーブル） -->
+        <section id="trial-balance" class="card">
+            <h2 class="card-title">試算表</h2>
+
+            <table class="tb-table">
                 <thead>
                     <tr>
                         <th>科目</th>
