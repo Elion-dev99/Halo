@@ -6,6 +6,7 @@ body {
     font-family: "Segoe UI", sans-serif;
     background: #f4f6f9;
     display: flex;
+    min-height: 100vh;
 }
 
 /* ================================
@@ -19,23 +20,24 @@ body {
     position: fixed;
     left: 0;
     top: 0;
-    padding: 20px;
+    padding: 24px;
     box-sizing: border-box;
 }
 
 .sidebar-logo {
     font-size: 22px;
     font-weight: bold;
-    margin-bottom: 30px;
+    margin-bottom: 32px;
 }
 
 .sidebar-nav ul {
     list-style: none;
     padding: 0;
+    margin: 0;
 }
 
 .sidebar-nav li {
-    margin-bottom: 18px;
+    margin-bottom: 20px;
 }
 
 .sidebar-nav a {
@@ -44,10 +46,12 @@ body {
     font-size: 15px;
     display: block;
     padding: 8px 0;
+    transition: 0.2s;
 }
 
 .sidebar-nav a:hover {
     color: #fff;
+    transform: translateX(4px);
 }
 
 /* ================================
@@ -55,8 +59,9 @@ body {
 ================================ */
 .main-content {
     margin-left: 240px;
-    padding: 30px;
+    padding: 32px;
     box-sizing: border-box;
+    width: calc(100% - 240px);
 }
 
 /* ================================
@@ -64,15 +69,15 @@ body {
 ================================ */
 .card {
     background: #fff;
-    padding: 25px;
-    margin-bottom: 30px;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    padding: 28px;
+    margin-bottom: 32px;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
 }
 
 .card-title {
     margin-top: 0;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
     font-size: 20px;
     font-weight: 600;
 }
@@ -81,28 +86,29 @@ body {
    入力フォーム
 ================================ */
 .input-row {
-    margin-bottom: 18px;
+    margin-bottom: 20px;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
+    flex-wrap: wrap; /* ← これが自動調整の鍵 */
 }
 
 .input-row label {
-    width: 100px;
+    width: 120px;
     font-size: 14px;
     color: #333;
 }
 
 .input-row input {
-    padding: 8px 10px;
+    padding: 10px 12px;
     border: 1px solid #ccc;
     border-radius: 6px;
     font-size: 14px;
-    flex: 1;
+    flex: 1; /* ← 画面幅に応じて自動伸縮 */
 }
 
 input[type="number"] {
-    width: 150px;
+    width: 160px;
 }
 
 /* ================================
@@ -112,15 +118,17 @@ input[type="number"] {
     background: #2f6fed;
     color: #fff;
     border: none;
-    padding: 12px 20px;
+    padding: 14px 22px;
     font-size: 15px;
     border-radius: 6px;
     cursor: pointer;
     margin-top: 10px;
+    transition: 0.2s;
 }
 
 .primary-btn:hover {
     background: #1f5bd1;
+    transform: translateY(-1px);
 }
 
 /* ================================
@@ -137,17 +145,48 @@ input[type="number"] {
 }
 
 .tb-table th {
-    padding: 12px;
+    padding: 14px;
     text-align: left;
     font-weight: 600;
     border-bottom: 2px solid #d0d4dc;
 }
 
 .tb-table td {
-    padding: 12px;
+    padding: 14px;
     border-bottom: 1px solid #e3e6eb;
 }
 
 .tb-table tr:hover {
     background: #f7f9fc;
+}
+
+/* ================================
+   スマホ対応（完全レスポンシブ）
+================================ */
+@media (max-width: 768px) {
+
+    body {
+        display: block;
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+    }
+
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+        padding: 20px;
+    }
+
+    .input-row {
+        flex-direction: column; /* ← スマホ時は縦並び */
+        align-items: flex-start;
+    }
+
+    input[type="number"] {
+        width: 100%;
+    }
 }
