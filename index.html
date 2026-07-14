@@ -73,6 +73,27 @@
         </section>
 
     </main>
+
+    <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+  import { getAuth } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCwCjgRwad408l4zKQz5iyrjRkg0R45o2Y",
+    authDomain: "halo-31be8.firebaseapp.com",
+    projectId: "halo-31be8",
+    storageBucket: "halo-31be8.firebasestorage.app",
+    messagingSenderId: "283938710904",
+    appId: "1:283938710904:web:9c34024c7cb5345d3cd48d",
+    measurementId: "G-N2K2TX22RW"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  window._auth = auth;
+</script>
+    
     <script type="module" src="assets/js/authCheck.js"></script>
     <script src="assets/js/app.js"></script>
 </body>
