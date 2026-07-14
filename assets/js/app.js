@@ -1,3 +1,7 @@
+import { createJournalEntry } from "../../core/ledger/journal.js";
+import { saveJournal } from "../../db/journalStore.js";
+import { updateTrialBalance } from "../../core/ledger/trialBalance.js";
+
 document.getElementById("save-journal").addEventListener("click", () => {
     const date = document.getElementById("je-date").value;
     const debitAccount = document.getElementById("je-debit-account").value;
@@ -5,12 +9,16 @@ document.getElementById("save-journal").addEventListener("click", () => {
     const creditAccount = document.getElementById("je-credit-account").value;
     const creditAmount = Number(document.getElementById("je-credit-amount").value);
 
-    const entry = {
-        id: Date.now(),
+    const entry = createJournalEntry({
         date,
-        debit: [{ account: debitAccount, amount: debitAmount }],
-        credit: [{ account: creditAccount, amount: creditAmount }]
-    };
+        debitAccount,
+        debitAmount,
+        creditAccount,
+        creditAmount
+    });
 
-    console.log("保存予定の仕訳:", entry);
+    saveJournal(entry);
+    updateTrialBalance();
+
+    console.log("保存完了:", entry);
 });
