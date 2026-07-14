@@ -1,55 +1,153 @@
+/* ================================
+   全体レイアウト
+================================ */
 body {
-    font-family: sans-serif;
     margin: 0;
-    padding: 0;
-    background: #f5f5f5;
+    font-family: "Segoe UI", sans-serif;
+    background: #f4f6f9;
+    display: flex;
 }
 
-header {
-    background: #333;
+/* ================================
+   左サイドバー（Netsuite風）
+================================ */
+.sidebar {
+    width: 240px;
+    background: #2f3b52;
     color: #fff;
-    padding: 16px;
-}
-
-main {
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
     padding: 20px;
+    box-sizing: border-box;
 }
 
-section {
+.sidebar-logo {
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 30px;
+}
+
+.sidebar-nav ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar-nav li {
+    margin-bottom: 18px;
+}
+
+.sidebar-nav a {
+    color: #dce3f0;
+    text-decoration: none;
+    font-size: 15px;
+    display: block;
+    padding: 8px 0;
+}
+
+.sidebar-nav a:hover {
+    color: #fff;
+}
+
+/* ================================
+   メインコンテンツ
+================================ */
+.main-content {
+    margin-left: 240px;
+    padding: 30px;
+    box-sizing: border-box;
+}
+
+/* ================================
+   カードUI（Netsuite風）
+================================ */
+.card {
     background: #fff;
-    padding: 16px;
-    margin-bottom: 20px;
+    padding: 25px;
+    margin-bottom: 30px;
     border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
 
+.card-title {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+/* ================================
+   入力フォーム
+================================ */
 .input-row {
-    margin-bottom: 12px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
-label {
-    margin-right: 8px;
+.input-row label {
+    width: 100px;
+    font-size: 14px;
+    color: #333;
 }
 
-input {
-    margin-right: 12px;
-    padding: 4px 8px;
+.input-row input {
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    flex: 1;
 }
 
-button {
-    padding: 8px 16px;
-    background: #0078ff;
+input[type="number"] {
+    width: 150px;
+}
+
+/* ================================
+   ボタン（Netsuite風）
+================================ */
+.primary-btn {
+    background: #2f6fed;
     color: #fff;
     border: none;
-    border-radius: 4px;
+    padding: 12px 20px;
+    font-size: 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 10px;
 }
 
-table {
+.primary-btn:hover {
+    background: #1f5bd1;
+}
+
+/* ================================
+   テーブル（試算表）
+================================ */
+.tb-table {
     width: 100%;
     border-collapse: collapse;
+    margin-top: 10px;
 }
 
-th, td {
-    border-bottom: 1px solid #ccc;
-    padding: 8px;
+.tb-table thead {
+    background: #eef1f7;
+}
+
+.tb-table th {
+    padding: 12px;
     text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #d0d4dc;
+}
+
+.tb-table td {
+    padding: 12px;
+    border-bottom: 1px solid #e3e6eb;
+}
+
+.tb-table tr:hover {
+    background: #f7f9fc;
 }
