@@ -1,21 +1,55 @@
-<!-- login.html -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-  import { getAuth } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Halo ログイン</title>
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyCwCjgRwad408l4zKQz5iyrjRkg0R45o2Y",
-    authDomain: "halo-31be8.firebaseapp.com",
-    projectId: "halo-31be8",
-    storageBucket: "halo-31be8.firebasestorage.app",
-    messagingSenderId: "283938710904",
-    appId: "1:283938710904:web:9c34024c7cb5345d3cd48d",
-    measurementId: "G-N2K2TX22RW"
-  };
+    <!-- ログイン画面専用CSS -->
+    <link rel="stylesheet" href="assets/css/login.css">
+</head>
+<body>
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
+    <!-- ログインカード -->
+    <div class="login-card">
+        <h1 class="login-title">Halo ログイン</h1>
 
-  // 他のJSから使えるように window に載せる
-  window._auth = auth;
-</script>
+        <div class="input-row">
+            <label for="email">メールアドレス</label>
+            <input type="email" id="email" placeholder="example@halo.jp">
+        </div>
+
+        <div class="input-row">
+            <label for="password">パスワード</label>
+            <input type="password" id="password" placeholder="••••••••">
+        </div>
+
+        <button id="login-btn" class="primary-btn">ログイン</button>
+    </div>
+
+    <!-- Firebase 初期化（紬稀のコード） -->
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+      import { getAuth } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyCwCjgRwad408l4zKQz5iyrjRkg0R45o2Y",
+        authDomain: "halo-31be8.firebaseapp.com",
+        projectId: "halo-31be8",
+        storageBucket: "halo-31be8.firebasestorage.app",
+        messagingSenderId: "283938710904",
+        appId: "1:283938710904:web:9c34024c7cb5345d3cd48d",
+        measurementId: "G-N2K2TX22RW"
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+
+      // 他のJSから使えるように window に載せる
+      window._auth = auth;
+    </script>
+
+    <!-- ログイン処理JS -->
+    <script type="module" src="assets/js/login.js"></script>
+
+</body>
+</html>
