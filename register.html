@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Halo 新規登録</title>
+
+    <!-- Presentation Layer（UI） -->
+    <link rel="stylesheet" href="assets/css/login.css">
+</head>
+
+<body>
+    <div class="login-card">
+        <h1 class="login-title">新規登録</h1>
+
+        <div class="input-row">
+            <label for="email">メールアドレス</label>
+            <input type="email" id="email" placeholder="example@halo.jp">
+        </div>
+
+        <div class="input-row">
+            <label for="password">パスワード</label>
+            <input type="password" id="password" placeholder="••••••••">
+        </div>
+
+        <p id="error-msg" class="error-msg"></p>
+
+        <button id="register-btn" class="primary-btn">アカウント作成</button>
+
+        <p class="login-sub">
+            すでにアカウントがありますか？  
+            <a href="login.html">ログインへ戻る</a>
+        </p>
+    </div>
+
+    <!-- Auth Layer（Firebase 初期化） -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCwCjgRwad408l4zKQz5iyrjRkg0R45o2Y",
+            authDomain: "halo-31be8.firebaseapp.com",
+            projectId: "halo-31be8",
+            storageBucket: "halo-31be8.firebasestorage.app",
+            messagingSenderId: "283938710904",
+            appId: "1:283938710904:web:9c34024c7cb5345d3cd48d",
+            measurementId: "G-N2K2TX22RW"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // 他の JS から参照できるようにする（Halo の構成に合わせる）
+        window._auth = auth;
+    </script>
+
+    <!-- Application Layer（新規登録ロジック） -->
+    <script type="module" src="assets/js/register.js"></script>
+</body>
+</html>
