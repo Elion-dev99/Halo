@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Halo プラン選択</title>
+    <link rel="stylesheet" href="assets/css/login.css">
+</head>
+
+<body>
+    <div class="login-card">
+        <h1 class="login-title">プランを選択してください</h1>
+
+        <div class="input-row">
+            <button class="primary-btn" onclick="selectPlan('light')">
+                ライトプラン（月額 3,000円）
+            </button>
+        </div>
+
+        <div class="input-row">
+            <button class="primary-btn" onclick="selectPlan('standard')">
+                スタンダード（月額 8,000円）
+            </button>
+        </div>
+
+        <div class="input-row">
+            <button class="primary-btn" onclick="selectPlan('pro')">
+                プロ（月額 18,000円）
+            </button>
+        </div>
+
+        <div class="input-row">
+            <button class="primary-btn" onclick="selectPlan('enterprise')">
+                エンタープライズ（月額 45,000円）
+            </button>
+        </div>
+
+        <p id="error-msg" class="error-msg"></p>
+    </div>
+
+    <!-- Firebase 初期化 -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCwCjgRwad408l4zKQz5iyrjRkg0R45o2Y",
+            authDomain: "halo-31be8.firebaseapp.com",
+            projectId: "halo-31be8",
+            storageBucket: "halo-31be8.firebasestorage.app",
+            messagingSenderId: "283938710904",
+            appId: "1:283938710904:web:9c34024c7cb5345d3cd48d",
+            measurementId: "G-N2K2TX22RW"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        window._auth = auth;
+    </script>
+
+    <!-- プラン選択ロジック -->
+    <script type="module" src="assets/js/plan.js"></script>
+</body>
+</html>
