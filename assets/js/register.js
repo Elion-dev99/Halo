@@ -38,7 +38,7 @@ document.getElementById("register-btn").addEventListener("click", () => {
             });
 
             // 登録後ログイン画面へ
-            window.location.href = "login.html";
+            window.location.href = "plan.html";
         })
         .catch(err => {
             errorMsg.textContent = "登録失敗：" + err.message;
