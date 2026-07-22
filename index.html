@@ -1,100 +1,194 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <title>会計システム Halo</title>
-    <link rel="stylesheet" href="assets/css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Halo - 統合会計システム</title>
+  <link rel="stylesheet" href="src/css/style.css">
 </head>
 <body>
+  <!-- ログインセクション -->
+  <section id="login-section">
+    <!-- ログインフォーム -->
+    <div class="login-container">
+      <h1>ログイン</h1>
+      <form id="login-form">
+        <div class="form-group">
+          <label for="login-email">メールアドレス</label>
+          <input
+            type="email"
+            id="login-email"
+            required
+            placeholder="example@mail.com"
+          />
+        </div>
+        <div class="form-group">
+          <label for="login-password">パスワード</label>
+          <input
+            type="password"
+            id="login-password"
+            required
+            placeholder="パスワードを入力"
+          />
+        </div>
+        <button type="submit">ログイン</button>
+      </form>
+    </div>
 
-    <!-- ============================
-         左サイドバー（Netsuite風）
-    ============================= -->
-    <aside class="sidebar">
-        <div class="sidebar-logo">Halo</div>
+    <!-- 登録フォーム -->
+    <div class="register-container">
+      <h1>新規登録</h1>
+      <form id="register-form">
+        <div class="form-group">
+          <label for="register-name">名前</label>
+          <input
+            type="text"
+            id="register-name"
+            required
+            placeholder="山田太郎"
+          />
+        </div>
+        <div class="form-group">
+          <label for="register-email">メールアドレス</label>
+          <input
+            type="email"
+            id="register-email"
+            required
+            placeholder="example@mail.com"
+          />
+        </div>
+        <div class="form-group">
+          <label for="register-company">会社名</label>
+          <input
+            type="text"
+            id="register-company"
+            placeholder="〇〇会社"
+          />
+        </div>
+        <div class="form-group">
+          <label for="register-password">パスワード</label>
+          <input
+            type="password"
+            id="register-password"
+            required
+            placeholder="6文字以上"
+          />
+        </div>
+        <button type="submit">登録</button>
+      </form>
+    </div>
+  </section>
 
-        <nav class="sidebar-nav">
-            <ul>
-                <li><a href="#journal-input">仕訳入力</a></li>
-                <li><a href="#trial-balance">試算表</a></li>
-                <li><a href="#">総勘定元帳</a></li>
-                <li><a href="#">設定</a></li>
-            </ul>
-        </nav>
-    </aside>
+  <!-- アプリケーションセクション -->
+  <section id="app-section">
+    <!-- ヘッダー -->
+    <div class="header">
+      <h1>🎯 Halo - 統合会計システム</h1>
+      <div class="header-info">
+        <span>ユーザー: <strong id="user-name"></strong></span>
+        <button id="logout-btn">ログアウト</button>
+      </div>
+    </div>
 
-    <!-- ============================
-         メインコンテンツ
-    ============================= -->
-    <main class="main-content">
-
-        <!-- 仕訳入力フォーム（カード） -->
-        <section id="journal-input" class="card">
-            <h2 class="card-title">仕訳入力</h2>
-
-            <div class="input-row">
-                <label>日付</label>
-                <input type="date" id="je-date">
+    <div class="container">
+      <!-- ダッシュボード -->
+      <div class="dashboard">
+        <!-- 勘定科目管理 -->
+        <div class="card">
+          <h2>📊 勘定科目管理</h2>
+          
+          <form id="add-account-form">
+            <div class="form-group">
+              <label for="account-name">勘定科目名</label>
+              <input
+                type="text"
+                id="account-name"
+                required
+                placeholder="現金、売上など"
+              />
             </div>
-
-            <div class="input-row">
-                <label>借方科目</label>
-                <input type="text" id="je-debit-account">
-                <label>金額</label>
-                <input type="number" id="je-debit-amount">
+            <div class="form-group">
+              <label for="account-type">勘定科目種類</label>
+              <select id="account-type" required>
+                <option value="">選択してください</option>
+                <option value="asset">資産 (ASSET)</option>
+                <option value="liability">負債 (LIABILITY)</option>
+                <option value="equity">資本 (EQUITY)</option>
+                <option value="revenue">収益 (REVENUE)</option>
+                <option value="expense">費用 (EXPENSE)</option>
+              </select>
             </div>
+            <button type="submit">勘定科目を追加</button>
+          </form>
 
-            <div class="input-row">
-                <label>貸方科目</label>
-                <input type="text" id="je-credit-account">
-                <label>金額</label>
-                <input type="number" id="je-credit-amount">
+          <h3 style="margin-top: 25px; color: #333;">現在の勘定科目</h3>
+          <div id="accounts-list"></div>
+        </div>
+
+        <!-- 仕訳記録 -->
+        <div class="card">
+          <h2>📝 仕訳記録</h2>
+          
+          <form id="journal-form">
+            <div class="form-group">
+              <label for="journal-description">取引内容</label>
+              <input
+                type="text"
+                id="journal-description"
+                required
+                placeholder="例：現金で売上"
+              />
             </div>
+            <div class="form-group">
+              <label for="debit-account">借方勘定科目</label>
+              <select id="debit-account" required>
+                <option value="">選択してください</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="credit-account">貸方勘定科目</label>
+              <select id="credit-account" required>
+                <option value="">選択してください</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="journal-amount">金額（円）</label>
+              <input
+                type="number"
+                id="journal-amount"
+                required
+                placeholder="10000"
+                min="0"
+                step="0.01"
+              />
+            </div>
+            <button type="submit">仕訳を記録</button>
+          </form>
+        </div>
+      </div>
 
-            <button id="save-journal" class="primary-btn">仕訳を保存</button>
-        </section>
+      <!-- 仕訳一覧と報告書 -->
+      <div class="dashboard">
+        <div class="card">
+          <h2>📋 仕訳一覧</h2>
+          <div id="journals-list"></div>
+        </div>
 
-        <!-- 試算表（カード＋テーブル） -->
-        <section id="trial-balance" class="card">
-            <h2 class="card-title">試算表</h2>
+        <div class="card">
+          <h2>📈 財務報告書</h2>
+          <div class="button-group">
+            <button id="trial-balance-btn">試算表</button>
+            <button id="income-statement-btn">損益計算書</button>
+            <button id="balance-sheet-btn">貸借対照表</button>
+          </div>
+          <p style="color: #999; margin-top: 15px; font-size: 14px;">
+            各ボタンをクリックして財務報告書を表示します
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-            <table class="tb-table">
-                <thead>
-                    <tr>
-                        <th>科目</th>
-                        <th>借方合計</th>
-                        <th>貸方合計</th>
-                    </tr>
-                </thead>
-                <tbody id="tb-body">
-                    <!-- JavaScriptで追加 -->
-                </tbody>
-            </table>
-        </section>
-
-    </main>
-
-    <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-  import { getAuth } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyCwCjgRwad408l4zKQz5iyrjRkg0R45o2Y",
-    authDomain: "halo-31be8.firebaseapp.com",
-    projectId: "halo-31be8",
-    storageBucket: "halo-31be8.firebasestorage.app",
-    messagingSenderId: "283938710904",
-    appId: "1:283938710904:web:9c34024c7cb5345d3cd48d",
-    measurementId: "G-N2K2TX22RW"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-
-  window._auth = auth;
-</script>
-    
-    <script type="module" src="assets/js/authCheck.js"></script>
-    <script src="assets/js/app.js"></script>
+  <script type="module" src="src/js/app.js"></script>
 </body>
 </html>
