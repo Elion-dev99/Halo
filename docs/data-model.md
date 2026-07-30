@@ -12,12 +12,20 @@
 
 ```
 users/{uid}
+emailInvites/{email}/items/{orgId}
 organizations/{orgId}
 organizations/{orgId}/members/{uid}
+organizations/{orgId}/invites/{email}
 organizations/{orgId}/periods/{periodId}
 organizations/{orgId}/accounts/{accountId}
 organizations/{orgId}/journals/{journalId}
 organizations/{orgId}/journals/{journalId}/lines/{lineId}
+organizations/{orgId}/customers/{customerId}
+organizations/{orgId}/vendors/{vendorId}
+organizations/{orgId}/invoices/{invoiceId}
+organizations/{orgId}/bills/{billId}
+organizations/{orgId}/payments/{paymentId}
+organizations/{orgId}/meta/{docId}
 ```
 
 ---
@@ -45,6 +53,11 @@ Firebase Auth の UID と 1:1。プロフィールと所属組織のポインタ
 | name | string | ✓ | 会社名 |
 | fiscalYearStartMonth | number | ✓ | 会計年度開始月（1–12）。初期値 4 |
 | currency | string | ✓ | 固定 `"JPY"` |
+| defaultArAccountCode | string | ✓ | デフォルト売掛金科目コード（例 1100） |
+| defaultApAccountCode | string | ✓ | デフォルト買掛金科目コード（例 2000） |
+| defaultCashAccountCode | string | ✓ | デフォルト現金/預金科目コード（例 1010） |
+| defaultRevenueAccountCode | string | ✓ | デフォルト売上科目コード（例 4000） |
+| defaultExpenseAccountCode | string | ✓ | デフォルト費用科目コード（例 5900） |
 | createdAt | timestamp | ✓ | |
 | createdBy | string | ✓ | uid |
 | updatedAt | timestamp | ✓ | |
@@ -56,10 +69,18 @@ Firebase Auth の UID と 1:1。プロフィールと所属組織のポインタ
 | フィールド | 型 | 必須 | 説明 |
 |------------|-----|------|------|
 | role | string | ✓ | `owner` \| `admin` \| `accountant` \| `viewer` |
+| email | string | | メール |
 | displayName | string | | 組織内表示名 |
+| status | string | ✓ | `active` \| `invited` \| `disabled` |
 | joinedAt | timestamp | ✓ | |
+| updatedAt | timestamp | | |
 
-Security Rules のメンバー判定に使用する。
+Security Rules のメンバー判定・RBAC に使用する。
+
+### 招待
+
+`organizations/{orgId}/invites/{email}` と `emailInvites/{email}/items/{orgId}` に pending 招待を保存。
+招待されたユーザーがログインするとメンバーシップへ変換される。
 
 ---
 
@@ -220,11 +241,5 @@ else:
 
 ## Security Rules（骨子）
 
-```
-match /organizations/{orgId}/{document=**} {
-  allow read, write: if request.auth != null
-    && exists(/databases/$(database)/documents/organizations/$(orgId)/members/$(request.auth.uid));
-}
-```
-
-細かい role 制限は Stage 1〜2 で段階的に追加。
+ロール別（`owner` / `admin` / `accountant` / `viewer`）。詳細は `firestore.rules` を参照。
+`disabled` メンバーは組織データにアクセス不可。招待受諾は pending invite がある場合のみ自己メンバー作成可。

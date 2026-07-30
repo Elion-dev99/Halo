@@ -9,9 +9,18 @@ service cloud.firestore {
       return signedIn() && request.auth.uid == uid;
     }
 
+    function memberDoc(orgId) {
+      return get(/databases/$(database)/documents/organizations/$(orgId)/members/$(request.auth.uid));
+    }
+
     function isOrgMember(orgId) {
       return signedIn()
-        && exists(/databases/$(database)/documents/organizations/$(orgId)/members/$(request.auth.uid));
+        && exists(/databases/$(database)/documents/organizations/$(orgId)/members/$(request.auth.uid))
+        && memberDoc(orgId).data.status != 'disabled';
+    }
+
+    function memberRole(orgId) {
+      return memberDoc(orgId).data.role;
     }
 
     function isOrgCreator(orgId) {
@@ -20,8 +29,50 @@ service cloud.firestore {
           == request.auth.uid;
     }
 
+    function hasAnyRole(orgId, roles) {
+      return isOrgMember(orgId) && memberRole(orgId) in roles;
+    }
+
+    function canWriteMasters(orgId) {
+      return hasAnyRole(orgId, ['owner', 'admin', 'accountant']);
+    }
+
+    function canWriteMembers(orgId) {
+      return hasAnyRole(orgId, ['owner', 'admin']);
+    }
+
+    function canWriteSettings(orgId) {
+      return hasAnyRole(orgId, ['owner', 'admin']);
+    }
+
+    function authEmail() {
+      return signedIn() && request.auth.token.email is string
+        ? request.auth.token.email.lower()
+        : '';
+    }
+
     match /users/{uid} {
       allow read, write: if isSelf(uid);
+    }
+
+    // 招待のメール別インデックス（ログイン時に自分のメール分のみ読取）
+    match /emailInvites/{email}/items/{inviteId} {
+      allow read: if signedIn() && email == authEmail();
+      allow create: if signedIn() && (
+        canWriteMembers(inviteId)
+        || (
+          // inviteId == orgId で保存している
+          exists(/databases/$(database)/documents/organizations/$(inviteId)/members/$(request.auth.uid))
+          && memberRole(inviteId) in ['owner', 'admin']
+        )
+      );
+      allow update: if signedIn() && (
+        email == authEmail()
+        || (
+          exists(/databases/$(database)/documents/organizations/$(inviteId)/members/$(request.auth.uid))
+          && memberRole(inviteId) in ['owner', 'admin']
+        )
+      );
     }
 
     match /organizations/{orgId} {
@@ -31,34 +82,98 @@ service cloud.firestore {
         && request.resource.data.currency == 'JPY';
 
       allow read: if isOrgMember(orgId) || isOrgCreator(orgId);
-      allow update, delete: if isOrgMember(orgId);
+      allow update: if canWriteSettings(orgId) || isOrgCreator(orgId);
+      allow delete: if hasAnyRole(orgId, ['owner']);
 
       match /members/{memberId} {
         allow read: if isOrgMember(orgId) || request.auth.uid == memberId;
-        allow create: if signedIn()
-          && request.auth.uid == memberId
-          && request.resource.data.role == 'owner';
-        allow update, delete: if isOrgMember(orgId);
+
+        // 組織作成時の owner、管理者による追加、有効な招待の受諾のみ
+        allow create: if signedIn() && (
+          (
+            request.auth.uid == memberId
+            && request.resource.data.role == 'owner'
+          )
+          || canWriteMembers(orgId)
+          || (
+            request.auth.uid == memberId
+            && authEmail() != ''
+            && exists(/databases/$(database)/documents/organizations/$(orgId)/invites/$(authEmail()))
+            && get(/databases/$(database)/documents/organizations/$(orgId)/invites/$(authEmail())).data.status == 'pending'
+            && request.resource.data.role == get(/databases/$(database)/documents/organizations/$(orgId)/invites/$(authEmail())).data.role
+          )
+        );
+
+        allow update: if canWriteMembers(orgId)
+          || (
+            request.auth.uid == memberId
+            && request.resource.data.role == resource.data.role
+            && request.resource.data.status == resource.data.status
+          );
+        allow delete: if canWriteMembers(orgId);
+      }
+
+      match /invites/{inviteId} {
+        allow read: if isOrgMember(orgId)
+          || (signedIn() && inviteId == authEmail());
+        allow create, delete: if canWriteMembers(orgId);
+        allow update: if canWriteMembers(orgId)
+          || (
+            signedIn()
+            && inviteId == authEmail()
+            && resource.data.status == 'pending'
+            && request.resource.data.status == 'accepted'
+          );
       }
 
       match /accounts/{accountId} {
-        allow read, write: if isOrgMember(orgId);
+        allow read: if isOrgMember(orgId);
+        allow write: if canWriteMasters(orgId);
       }
 
       match /periods/{periodId} {
-        allow read, write: if isOrgMember(orgId);
+        allow read: if isOrgMember(orgId);
+        allow write: if canWriteMasters(orgId);
       }
 
       match /journals/{journalId} {
-        allow read, write: if isOrgMember(orgId);
+        allow read: if isOrgMember(orgId);
+        allow write: if canWriteMasters(orgId);
 
         match /lines/{lineId} {
-          allow read, write: if isOrgMember(orgId);
+          allow read: if isOrgMember(orgId);
+          allow write: if canWriteMasters(orgId);
         }
       }
 
+      match /customers/{customerId} {
+        allow read: if isOrgMember(orgId);
+        allow write: if canWriteMasters(orgId);
+      }
+
+      match /vendors/{vendorId} {
+        allow read: if isOrgMember(orgId);
+        allow write: if canWriteMasters(orgId);
+      }
+
+      match /invoices/{invoiceId} {
+        allow read: if isOrgMember(orgId);
+        allow write: if canWriteMasters(orgId);
+      }
+
+      match /bills/{billId} {
+        allow read: if isOrgMember(orgId);
+        allow write: if canWriteMasters(orgId);
+      }
+
+      match /payments/{paymentId} {
+        allow read: if isOrgMember(orgId);
+        allow write: if canWriteMasters(orgId);
+      }
+
       match /meta/{docId} {
-        allow read, write: if isOrgMember(orgId);
+        allow read: if isOrgMember(orgId);
+        allow write: if canWriteMasters(orgId);
       }
     }
   }
