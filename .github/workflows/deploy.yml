@@ -1,8 +1,17 @@
+# Deploy to GitHub Pages (optional / legacy)
+#
+# Requires repository secrets VITE_FIREBASE_* — see docs/secrets-setup.md
+# Prefer Cloudflare Workers & Pages for preview without a custom domain.
+#
+# Default: manual only so missing secrets do not fail every push.
+
 name: Deploy Vite to GitHub Pages
 
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:
+  # Uncomment after VITE_FIREBASE_* secrets are configured:
+  # push:
+  #   branches: [main]
 
 permissions:
   contents: read
@@ -17,6 +26,19 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Check required secrets
+        env:
+          HAS_FB_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+          HAS_FB_PROJECT: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
+        run: |
+          missing=0
+          if [ -z "$HAS_FB_KEY" ]; then echo "::error::Missing secret VITE_FIREBASE_API_KEY"; missing=1; fi
+          if [ -z "$HAS_FB_PROJECT" ]; then echo "::error::Missing secret VITE_FIREBASE_PROJECT_ID"; missing=1; fi
+          if [ "$missing" -ne 0 ]; then
+            echo "See docs/secrets-setup.md"
+            exit 1
+          fi
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
