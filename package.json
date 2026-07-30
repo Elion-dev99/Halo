@@ -8,7 +8,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "lint": "tsc --noEmit",
-    "deploy:cf": "npm run build && wrangler pages deploy dist --project-name=halo-accounting"
+    "deploy:cf": "npm run build && wrangler deploy"
   },
   "dependencies": {
     "firebase": "^10.14.1",

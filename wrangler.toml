@@ -1,5 +1,8 @@
-# Halo — Cloudflare Pages
-# Deploy: npm run build && npx wrangler pages deploy dist --project-name=halo-accounting
+# Halo — Cloudflare Workers static assets (SPA)
+# Cloudflare dashboard runs `wrangler deploy`; configure assets here (not pages_build_output_dir).
 name = "halo-accounting"
 compatibility_date = "2026-07-30"
-pages_build_output_dir = "dist"
+
+[assets]
+directory = "./dist"
+not_found_handling = "single-page-application"

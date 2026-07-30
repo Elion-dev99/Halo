@@ -1,33 +1,46 @@
-# Cloudflare Pages で動作確認する
+# Cloudflare Pages / Workers で動作確認する
 
-独自サーバー・独自ドメインなしで、無料の `*.pages.dev` 上で Halo を確認できます。
+独自サーバー・独自ドメインなしで、無料の `*.workers.dev` / `*.pages.dev` 上で Halo を確認できます。
 
-フロントは Cloudflare Pages、認証・DB はこれまでどおり **Firebase** です。
+フロントは Cloudflare、認証・DB はこれまでどおり **Firebase** です。
 
-## いちばん簡単な方法（ダッシュボード）
+## 今回のエラーについて
 
-### 1. Cloudflare アカウント
+ログに次が出る場合:
 
-1. [Cloudflare](https://dash.cloudflare.com/sign-up) に無料登録
-2. 左メニュー **Workers & Pages** を開く
+- `run wrangler deploy on a Pages project, wrangler pages deploy should be used`
+- `Missing entry-point to Worker script or to assets directory`
 
-### 2. GitHub リポジトリを接続
+**原因**: Cloudflare が `wrangler deploy` を実行しているのに、以前の `wrangler.toml` が Pages 専用（`pages_build_output_dir`）だけだったためです。
 
-1. **Create** → **Pages** → **Connect to Git**
-2. `Elion-dev99/Halo` を選択（未連携なら GitHub を Authorize）
-3. ビルド設定:
+**修正**: `wrangler.toml` を Workers 静的アセット構成に変更済みです。
+
+```toml
+[assets]
+directory = "./dist"
+not_found_handling = "single-page-application"
+```
+
+この PR / ブランチをマージ（またはこのブランチで再デプロイ）してください。
+
+---
+
+## ダッシュボード設定（Workers & Pages）
+
+### ビルド
 
 | 項目 | 値 |
 |------|-----|
-| Framework preset | `None` / Vite |
 | Build command | `npm run build` |
-| Build output directory | `dist` |
-| Root directory | `/`（そのまま） |
-| Production branch | `main` |
+| Deploy command | `npx wrangler deploy`（デフォルトのままで可） |
+| Root directory | `/` |
 
-### 3. 環境変数（Firebase）
+> 「Build output directory」だけを使うクラシック Pages 接続の場合は `dist` を指定し、Deploy で wrangler を使わない設定でも動きます。  
+> いまのエラーログは **wrangler deploy 経路** なので、上記の `wrangler.toml` 修正が必要です。
 
-Cloudflare Pages の **Settings → Environment variables** に、本番（Production）へ次を追加します（`.env.example` と同じキー）:
+### 環境変数（Firebase）
+
+Settings → Variables に本番用で追加:
 
 - `VITE_FIREBASE_API_KEY`
 - `VITE_FIREBASE_AUTH_DOMAIN`
@@ -37,29 +50,13 @@ Cloudflare Pages の **Settings → Environment variables** に、本番（Produ
 - `VITE_FIREBASE_APP_ID`
 - `VITE_FIREBASE_MEASUREMENT_ID`（任意）
 
-必要なら `VITE_BASE_PATH=/` も明示（省略時も `/`）。
+変更後は必ず **再デプロイ** してください（ビルド時に Vite へ埋め込まれます）。
 
-保存後、**Retry deployment** で再ビルドしてください。
+### Firebase Authorized domains
 
-### 4. 公開 URL
+Authentication → Settings → Authorized domains に、公開ホストを追加:
 
-デプロイ完了後:
-
-`https://halo-accounting.pages.dev`  
-（プロジェクト名によって変わります。Workers & Pages のプロジェクト画面に表示）
-
-独自ドメインは後から Settings → Custom domains で追加できます。今は不要です。
-
-### 5. Firebase 側の許可
-
-Firebase Console → Authentication → Settings → **Authorized domains** に、Pages のホストを追加します。
-
-例:
-
-- `halo-accounting.pages.dev`
-- プレビュー用があれば `*.pages.dev` 相当のホスト（表示されているホスト名をそのまま追加）
-
-あわせて `firestore.rules` をデプロイ済みであること:
+- `halo-accounting.<account>.workers.dev` または表示されている `*.pages.dev` ホスト
 
 ```bash
 npx firebase deploy --only firestore:rules
@@ -67,35 +64,7 @@ npx firebase deploy --only firestore:rules
 
 ---
 
-## 代替: GitHub Actions（自動デプロイ）
-
-リポジトリに [`.github/workflows/deploy-cloudflare.yml`](../.github/workflows/deploy-cloudflare.yml) があります。
-
-### GitHub Secrets
-
-Repository → Settings → Secrets and variables → Actions:
-
-| Secret | 内容 |
-|--------|------|
-| `CLOUDFLARE_API_TOKEN` | Cloudflare API Token（Pages Edit 権限） |
-| `CLOUDFLARE_ACCOUNT_ID` | アカウント ID（Workers & Pages 右サイド） |
-| `VITE_FIREBASE_*` | 上記と同じ Firebase 変数一式 |
-
-### API Token の作り方
-
-1. Cloudflare → My Profile → API Tokens → Create Token
-2. テンプレート **Edit Cloudflare Workers** を使うか、カスタムで:
-   - Account → Cloudflare Pages → Edit
-   - Account → Account Settings → Read（必要に応じて）
-3. 生成したトークンを `CLOUDFLARE_API_TOKEN` に保存
-
-初回は Cloudflare 側に Pages プロジェクト `halo-accounting` が無い場合、ダッシュボードで同名プロジェクトを先に作るか、Actions 実行時に Wrangler が作成します。
-
-`main` への push で自動デプロイされます。
-
----
-
-## 代替: ローカルから Wrangler で直接アップロード
+## ローカルからデプロイ
 
 ```bash
 cp .env.example .env.local
@@ -104,30 +73,25 @@ cp .env.example .env.local
 npm install
 npm run build
 npx wrangler login
-npx wrangler pages deploy dist --project-name=halo-accounting
+npx wrangler deploy
 ```
 
-または:
-
-```bash
-npm run deploy:cf
-```
+または `npm run deploy:cf`
 
 ---
 
 ## 動作確認チェックリスト
 
-1. `https://<project>.pages.dev` が開く
-2. `/login` や `/journals/new` を直接開いても 404 にならない（SPA `_redirects`）
-3. 新規登録・ログインができる（Firebase Authorized domains 設定済み）
-4. 勘定科目・期間がシードされている
-5. 仕訳転記 → 試算表に反映される
+1. 公開 URL が開く
+2. `/login` や `/journals/new` を直接開いても 404 にならない
+3. 新規登録・ログインができる
+4. 仕訳転記 → 試算表に反映される
 
 ## トラブルシュート
 
 | 症状 | 確認 |
 |------|------|
-| 真っ白 / Missing Firebase env | Pages の Environment variables 未設定 or 再デプロイ忘れ |
-| ログインできない / unauthorized-domain | Firebase Authorized domains に pages.dev を追加 |
-| リロードで 404 | `public/_redirects` がビルド成果物に含まれているか（`dist/_redirects`） |
-| Firestore permission denied | `firestore.rules` 未デプロイ、または未ログイン |
+| Missing entry-point / assets directory | この修正入りの `wrangler.toml` か。先に `npm run build` で `dist/` があるか |
+| Missing Firebase env | Variables 未設定 or 再デプロイ忘れ |
+| unauthorized-domain | Firebase Authorized domains に公開ホストを追加 |
+| Firestore permission denied | rules 未デプロイ、または未ログイン |

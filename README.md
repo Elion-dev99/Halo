@@ -13,7 +13,7 @@ Firebase Auth / Firestore をバックエンドにしたクラウド会計アプ
 
 ```bash
 npm run build
-npx wrangler pages deploy dist --project-name=halo-accounting
+npx wrangler deploy
 ```
 
 または Cloudflare ダッシュボードで GitHub リポジトリを接続してください。
