@@ -74,12 +74,53 @@ export interface AccountingPeriod {
   closedBy?: string;
 }
 
+export interface JournalLineInput {
+  accountId: string;
+  debit: number;
+  credit: number;
+  memo: string;
+}
+
+export interface JournalLine extends JournalLineInput {
+  id: string;
+  lineNo: number;
+}
+
+export interface Journal {
+  id: string;
+  date: string;
+  memo: string;
+  status: JournalStatus;
+  periodId: string | null;
+  entryNumber: string | null;
+  createdAt: Date;
+  createdBy: string;
+  updatedAt: Date;
+  postedAt?: Date;
+  postedBy?: string;
+  voidedAt?: Date;
+  voidedBy?: string;
+  voidReason?: string;
+  totalDebit: number;
+  totalCredit: number;
+}
+
+export interface JournalWithLines extends Journal {
+  lines: JournalLine[];
+}
+
 export const ACCOUNT_TYPE_LABELS: Record<AccountType, string> = {
   asset: "資産",
   liability: "負債",
   equity: "純資産",
   revenue: "収益",
   expense: "費用",
+};
+
+export const JOURNAL_STATUS_LABELS: Record<JournalStatus, string> = {
+  draft: "下書き",
+  posted: "転記済",
+  void: "取消",
 };
 
 export const DEFAULT_NORMAL_BALANCE: Record<AccountType, NormalBalance> = {

@@ -9,7 +9,7 @@ export function DashboardPage() {
       <header className="page-header">
         <h2>ダッシュボード</h2>
         <p className="muted">
-          組織マスタと会計期間・勘定科目の準備ができました。仕訳は Stage 3 で実装します。
+          会計コア（勘定科目・期間・仕訳・財務諸表）が利用できます。
         </p>
       </header>
 
@@ -35,11 +35,17 @@ export function DashboardPage() {
       </div>
 
       <div className="quick-links">
+        <Link className="quick-link" to="/journals/new">
+          仕訳を入力
+        </Link>
+        <Link className="quick-link" to="/reports/trial-balance">
+          試算表
+        </Link>
         <Link className="quick-link" to="/accounts">
-          勘定科目を管理
+          勘定科目
         </Link>
         <Link className="quick-link" to="/periods">
-          会計期間を管理
+          会計期間
         </Link>
       </div>
     </section>

@@ -56,6 +56,13 @@ input {
   padding: 0.7rem 1rem;
   cursor: pointer;
   transition: background 160ms ease, transform 160ms ease, border-color 160ms ease;
+  display: inline-block;
+  text-decoration: none;
+  text-align: center;
+}
+
+a.btn:hover {
+  text-decoration: none;
 }
 
 .btn:disabled {
@@ -504,6 +511,66 @@ input {
   transform: translateY(-2px);
   border-color: var(--accent);
   text-decoration: none;
+}
+
+.num {
+  text-align: right !important;
+  font-variant-numeric: tabular-nums;
+}
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.panel-filters {
+  margin: 1rem 0;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.journal-lines input,
+.journal-lines select {
+  width: 100%;
+  min-width: 0;
+}
+
+.bs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+.bs-grid h3 {
+  margin: 0 0 0.75rem;
+}
+
+@media (max-width: 900px) {
+  .form-grid-2,
+  .bs-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media print {
+  .sidebar,
+  .topbar,
+  .toolbar,
+  .panel-filters {
+    display: none !important;
+  }
+
+  .app-shell {
+    display: block;
+  }
+
+  .panel {
+    box-shadow: none;
+    border: none;
+  }
 }
 
 @media (max-width: 900px) {
