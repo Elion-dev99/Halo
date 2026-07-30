@@ -97,6 +97,7 @@ npx wrangler deploy
 | 症状 | 確認 |
 |------|------|
 | Missing entry-point / assets directory | この修正入りの `wrangler.toml` か。先に `npm run build` で `dist/` があるか |
+| Invalid `_redirects` / Infinite loop (100324) | `public/_redirects` を置かない。SPA は `not_found_handling` に任せる |
 | Missing Firebase env | Variables 未設定 or 再デプロイ忘れ |
 | unauthorized-domain | Firebase Authorized domains に公開ホストを追加 |
 | Firestore permission denied | rules 未デプロイ、または未ログイン |
