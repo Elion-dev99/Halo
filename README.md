@@ -1,19 +1,19 @@
 # Halo — 統合会計システム
 
 Firebase Auth / Firestore をバックエンドにしたクラウド会計アプリです。  
-現在は **会計コア全面改修** 中で、フロントエンドは React + TypeScript + Vite です。
+フロントエンドは React + TypeScript + Vite。会計コア（第1到達目標）まで実装済みです。
 
 設計・進捗は [`docs/WORKPLAN.md`](docs/WORKPLAN.md) を参照してください。
 
+## 機能（会計コア）
+
+- 認証・組織作成（登録時）
+- 勘定科目マスタ（初期科目セット付き）
+- 会計期間（月次・オープン/クローズ）
+- 仕訳（複数借方/貸方・下書き・転記・取消）
+- 総勘定元帳 / 試算表 / 損益計算書 / 貸借対照表（CSV 出力）
+
 ## セットアップ
-
-### 前提
-
-- Node.js 20+
-- npm
-- Firebase プロジェクト（Authentication の Email/Password を有効化）
-
-### 手順
 
 ```bash
 git clone https://github.com/Elion-dev99/Halo.git
@@ -22,9 +22,10 @@ npm install
 cp .env.example .env.local
 ```
 
-`.env.local` に Firebase 設定を記入します。
+`.env.local` に Firebase 設定を記入し、`firestore.rules` をデプロイします。
 
 ```bash
+npx firebase deploy --only firestore:rules
 npm run dev
 ```
 
@@ -34,26 +35,9 @@ npm run dev
 
 ```bash
 npm run build
-npm run preview
 ```
 
-GitHub Pages 向けビルドでは `VITE_BASE_PATH=/Halo/` を指定します（Actions で設定済み）。
-
-### Firestore Rules
-
-[`firestore.rules`](firestore.rules) を Firebase プロジェクトへデプロイしてください。
-
-```bash
-npx firebase deploy --only firestore:rules
-```
-
-## Stage 1 でできること
-
-- ユーザー登録（同時に組織を 1 件作成）
-- ログイン / ログアウト
-- NetSuite 風サイドナビ付きアプリシェル
-- ダッシュボード（組織情報の表示）
-- 勘定科目・仕訳・レポート画面はプレースホルダ（Stage 2〜4）
+GitHub Pages 向けは Actions で `VITE_BASE_PATH=/Halo/` と Firebase secrets を使用します。
 
 ## ドキュメント
 
