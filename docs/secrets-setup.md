@@ -85,6 +85,7 @@ Secrets 登録済みなら次で実行できます。
 | `VITE_FIREBASE_MESSAGING_SENDER_ID` | Messaging sender ID |
 | `VITE_FIREBASE_APP_ID` | App ID |
 | `VITE_FIREBASE_MEASUREMENT_ID` | 任意 |
+| `VITE_PLATFORM_ADMIN_EMAILS` | 任意。システム管理者メール |
 
 #### Cloudflare（`deploy-cloudflare.yml` のみ）
 
