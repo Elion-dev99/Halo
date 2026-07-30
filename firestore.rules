@@ -13,14 +13,24 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/organizations/$(orgId)/members/$(request.auth.uid));
     }
 
+    // 旧メンバー doc に status が無い場合は active 扱い（欠落フィールド参照で評価失敗しない）
+    function memberStatus(orgId) {
+      return memberDoc(orgId).data.get('status', 'active');
+    }
+
     function isOrgMember(orgId) {
       return signedIn()
         && exists(/databases/$(database)/documents/organizations/$(orgId)/members/$(request.auth.uid))
-        && memberDoc(orgId).data.status != 'disabled';
+        && memberStatus(orgId) != 'disabled';
     }
 
     function memberRole(orgId) {
       return memberDoc(orgId).data.role;
+    }
+
+    function isPlatformAdmin() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/platformAdmins/$(request.auth.uid));
     }
 
     function isOrgCreator(orgId) {
@@ -55,6 +65,12 @@ service cloud.firestore {
       allow read, write: if isSelf(uid);
     }
 
+    // プラットフォーム管理者（システム開発・運用）。Console で UID を手動 seed する。
+    match /platformAdmins/{uid} {
+      allow read: if isSelf(uid) || isPlatformAdmin();
+      allow create, update, delete: if isPlatformAdmin();
+    }
+
     // 招待のメール別インデックス（ログイン時に自分のメール分のみ読取）
     match /emailInvites/{email}/items/{inviteId} {
       allow read: if signedIn() && email == authEmail();
@@ -81,12 +97,12 @@ service cloud.firestore {
         && request.resource.data.name is string
         && request.resource.data.currency == 'JPY';
 
-      allow read: if isOrgMember(orgId) || isOrgCreator(orgId);
-      allow update: if canWriteSettings(orgId) || isOrgCreator(orgId);
-      allow delete: if hasAnyRole(orgId, ['owner']);
+      allow read: if isOrgMember(orgId) || isOrgCreator(orgId) || isPlatformAdmin();
+      allow update: if canWriteSettings(orgId) || isOrgCreator(orgId) || isPlatformAdmin();
+      allow delete: if hasAnyRole(orgId, ['owner']) || isPlatformAdmin();
 
       match /members/{memberId} {
-        allow read: if isOrgMember(orgId) || request.auth.uid == memberId;
+        allow read: if isOrgMember(orgId) || request.auth.uid == memberId || isPlatformAdmin();
 
         // 組織作成時の owner、管理者による追加、有効な招待の受諾のみ
         allow create: if signedIn() && (
@@ -95,6 +111,7 @@ service cloud.firestore {
             && request.resource.data.role == 'owner'
           )
           || canWriteMembers(orgId)
+          || isPlatformAdmin()
           || (
             request.auth.uid == memberId
             && authEmail() != ''
@@ -105,19 +122,23 @@ service cloud.firestore {
         );
 
         allow update: if canWriteMembers(orgId)
+          || isPlatformAdmin()
           || (
             request.auth.uid == memberId
             && request.resource.data.role == resource.data.role
-            && request.resource.data.status == resource.data.status
+            && request.resource.data.get('status', 'active')
+              == resource.data.get('status', 'active')
           );
-        allow delete: if canWriteMembers(orgId);
+        allow delete: if canWriteMembers(orgId) || isPlatformAdmin();
       }
 
       match /invites/{inviteId} {
         allow read: if isOrgMember(orgId)
+          || isPlatformAdmin()
           || (signedIn() && inviteId == authEmail());
-        allow create, delete: if canWriteMembers(orgId);
+        allow create, delete: if canWriteMembers(orgId) || isPlatformAdmin();
         allow update: if canWriteMembers(orgId)
+          || isPlatformAdmin()
           || (
             signedIn()
             && inviteId == authEmail()

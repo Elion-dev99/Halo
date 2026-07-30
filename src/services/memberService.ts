@@ -1,6 +1,7 @@
 import {
   collection,
   doc,
+  getDoc,
   getDocs,
   query,
   serverTimestamp,
@@ -51,23 +52,51 @@ export async function listMembers(orgId: string): Promise<OrgMember[]> {
 }
 
 export async function listPendingInvites(orgId: string): Promise<OrgInvite[]> {
-  const snap = await getDocs(
-    query(
-      collection(db, "organizations", orgId, "invites"),
-      where("status", "==", "pending"),
-    ),
-  );
-  return snap.docs.map((d) => {
-    const data = d.data();
-    return {
-      id: d.id,
-      email: String(data.email ?? d.id),
-      role: data.role as OrgInvite["role"],
-      invitedBy: String(data.invitedBy ?? ""),
-      createdAt: data.createdAt?.toDate?.() ?? new Date(),
-      status: "pending",
-    };
-  });
+  // where クエリは未作成インデックスや空コレクションで失敗しやすいため全件取得してフィルタ
+  const snap = await getDocs(collection(db, "organizations", orgId, "invites"));
+  return snap.docs
+    .map((d) => {
+      const data = d.data();
+      return {
+        id: d.id,
+        email: String(data.email ?? d.id),
+        role: data.role as OrgInvite["role"],
+        invitedBy: String(data.invitedBy ?? ""),
+        createdAt: data.createdAt?.toDate?.() ?? new Date(),
+        status: (data.status as OrgInvite["status"]) ?? "pending",
+      };
+    })
+    .filter((i) => i.status === "pending");
+}
+
+/** 旧メンバー doc に欠落している status / email を補完 */
+export async function ensureMemberDefaults(params: {
+  orgId: string;
+  uid: string;
+  email?: string;
+  displayName?: string;
+}): Promise<OrgMember | null> {
+  const ref = doc(db, "organizations", params.orgId, "members", params.uid);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return null;
+  const data = snap.data();
+  const patch: {
+    status?: string;
+    email?: string;
+    displayName?: string;
+    updatedAt?: ReturnType<typeof serverTimestamp>;
+  } = {};
+  if (data.status == null) patch.status = "active";
+  if (!data.email && params.email) patch.email = params.email;
+  if (!data.displayName && params.displayName) {
+    patch.displayName = params.displayName;
+  }
+  if (Object.keys(patch).length > 0) {
+    patch.updatedAt = serverTimestamp();
+    await updateDoc(ref, patch);
+  }
+  const fresh = await getDoc(ref);
+  return fresh.exists() ? mapMember(fresh.id, fresh.data()) : null;
 }
 
 export async function inviteMember(params: {

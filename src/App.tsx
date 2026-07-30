@@ -21,6 +21,7 @@ import { OrganizationSettingsPage } from "@/pages/OrganizationSettingsPage";
 import { AccountSettingsPage } from "@/pages/AccountSettingsPage";
 import { MembersSettingsPage } from "@/pages/MembersSettingsPage";
 import { FeaturesSettingsPage } from "@/pages/FeaturesSettingsPage";
+import { SystemConsolePage } from "@/pages/SystemConsolePage";
 
 const basename = import.meta.env.BASE_URL.replace(/\/$/, "") || undefined;
 
@@ -74,6 +75,7 @@ export default function App() {
               path="/settings/features"
               element={<FeaturesSettingsPage />}
             />
+            <Route path="/sys" element={<SystemConsolePage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

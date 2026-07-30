@@ -9,6 +9,8 @@ interface ImportMetaEnv {
   readonly VITE_FIREBASE_APP_ID: string;
   readonly VITE_FIREBASE_MEASUREMENT_ID?: string;
   readonly VITE_BASE_PATH?: string;
+  /** カンマ区切り。システム開発・運用者メール（一般ナビ非表示） */
+  readonly VITE_PLATFORM_ADMIN_EMAILS?: string;
 }
 
 interface ImportMeta {
