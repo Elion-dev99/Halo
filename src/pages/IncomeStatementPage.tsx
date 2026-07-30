@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { MissingOrganizationNotice } from "@/components/OrganizationSetupPanel";
 import { useAuth } from "@/context/AuthContext";
 import {
   buildIncomeStatement,
@@ -64,6 +65,10 @@ export function IncomeStatementPage() {
       ["費用合計", "", "", String(statement.totalExpense)],
       ["当期純利益", "", "", String(statement.netIncome)],
     ]);
+  }
+
+  if (!orgId) {
+    return <MissingOrganizationNotice />;
   }
 
   return (

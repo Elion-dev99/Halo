@@ -1,8 +1,20 @@
 import { Link } from "react-router-dom";
+import { OrganizationSetupPanel } from "@/components/OrganizationSetupPanel";
 import { useAuth } from "@/context/AuthContext";
 
 export function DashboardPage() {
-  const { profile, organization } = useAuth();
+  const { user, profile, organization, needsOrganizationSetup } = useAuth();
+
+  if (needsOrganizationSetup) {
+    return (
+      <section className="page">
+        <OrganizationSetupPanel />
+      </section>
+    );
+  }
+
+  const displayName =
+    profile?.displayName || user?.displayName || user?.email || "—";
 
   return (
     <section className="page">
@@ -20,7 +32,7 @@ export function DashboardPage() {
         </div>
         <div className="info-block">
           <h3>ユーザー</h3>
-          <p>{profile?.displayName ?? "—"}</p>
+          <p>{displayName}</p>
         </div>
         <div className="info-block">
           <h3>通貨</h3>

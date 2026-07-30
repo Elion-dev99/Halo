@@ -6,16 +6,9 @@ import {
   updateProfile,
   type User,
 } from "firebase/auth";
-import {
-  collection,
-  doc,
-  getDoc,
-  serverTimestamp,
-  writeBatch,
-} from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "@/config/firebase";
-import { appendDefaultAccountsToBatch } from "@/services/accountService";
-import { appendFiscalYearPeriodsToBatch } from "@/services/periodService";
+import { bootstrapOrganization } from "@/services/orgService";
 import type { UserProfile } from "@/types/models";
 
 export function subscribeAuth(callback: (user: User | null) => void) {
@@ -39,48 +32,21 @@ export async function register(params: {
 }) {
   const { email, password, displayName, organizationName } = params;
   const cred = await createUserWithEmailAndPassword(auth, email, password);
-  await updateProfile(cred.user, { displayName });
+  await updateProfile(cred.user, { displayName: displayName.trim() });
 
-  const fiscalYearStartMonth = 4;
-  const orgRef = doc(collection(db, "organizations"));
-  const userRef = doc(db, "users", cred.user.uid);
-  const memberRef = doc(
-    db,
-    "organizations",
-    orgRef.id,
-    "members",
-    cred.user.uid,
-  );
-  const batch = writeBatch(db);
-
-  batch.set(orgRef, {
-    name: organizationName.trim(),
-    fiscalYearStartMonth,
-    currency: "JPY",
-    createdAt: serverTimestamp(),
-    createdBy: cred.user.uid,
-    updatedAt: serverTimestamp(),
-  });
-
-  batch.set(memberRef, {
-    role: "owner",
-    displayName: displayName.trim(),
-    joinedAt: serverTimestamp(),
-  });
-
-  batch.set(userRef, {
-    email,
-    displayName: displayName.trim(),
-    defaultOrgId: orgRef.id,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  });
-
-  appendDefaultAccountsToBatch(batch, orgRef.id);
-  appendFiscalYearPeriodsToBatch(batch, orgRef.id, fiscalYearStartMonth);
-
-  await batch.commit();
-  return { user: cred.user, orgId: orgRef.id };
+  try {
+    const { orgId } = await bootstrapOrganization({
+      uid: cred.user.uid,
+      email,
+      displayName,
+      organizationName,
+    });
+    return { user: cred.user, orgId };
+  } catch (error) {
+    // Auth ユーザーは残るので、画面から組織セットアップで復旧できる
+    console.error("Organization bootstrap failed after Auth signup", error);
+    throw error;
+  }
 }
 
 export async function getUserProfile(uid: string): Promise<UserProfile | null> {

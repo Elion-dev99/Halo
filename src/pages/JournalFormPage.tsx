@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
+import { MissingOrganizationNotice } from "@/components/OrganizationSetupPanel";
 import { listAccounts } from "@/services/accountService";
 import {
   createAndPostJournal,
@@ -198,11 +199,7 @@ export function JournalFormPage() {
   }
 
   if (!orgId) {
-    return (
-      <section className="page">
-        <p className="muted">組織が設定されていません。</p>
-      </section>
-    );
+    return <MissingOrganizationNotice />;
   }
 
   if (loading) {

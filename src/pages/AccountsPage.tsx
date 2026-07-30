@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { MissingOrganizationNotice } from "@/components/OrganizationSetupPanel";
 import {
   createAccount,
   listAccounts,
@@ -147,11 +148,7 @@ export function AccountsPage() {
   }
 
   if (!orgId) {
-    return (
-      <section className="page">
-        <p className="muted">組織が設定されていません。</p>
-      </section>
-    );
+    return <MissingOrganizationNotice />;
   }
 
   return (
