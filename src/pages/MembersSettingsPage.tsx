@@ -39,15 +39,25 @@ export function MembersSettingsPage() {
     setLoading(true);
     setError(null);
     try {
-      const [memberRows, inviteRows] = await Promise.all([
-        listMembers(orgId),
-        listPendingInvites(orgId),
-      ]);
+      const memberRows = await listMembers(orgId);
       setMembers(memberRows);
-      setInvites(inviteRows);
+      try {
+        setInvites(await listPendingInvites(orgId));
+      } catch (inviteErr) {
+        console.warn(inviteErr);
+        setInvites([]);
+      }
     } catch (err) {
       console.error(err);
-      setError("メンバー一覧の読み込みに失敗しました。");
+      const detail =
+        err instanceof Error && err.message
+          ? err.message
+          : "メンバー一覧の読み込みに失敗しました。";
+      setError(
+        detail.includes("permission") || detail.includes("Permission")
+          ? "権限エラーです。Firestore ルールを最新の firestore.rules で公開し、ページを再読み込みしてください。"
+          : detail,
+      );
     } finally {
       setLoading(false);
     }

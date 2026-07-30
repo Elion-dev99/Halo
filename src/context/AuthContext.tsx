@@ -18,6 +18,7 @@ import {
 } from "@/services/authService";
 import {
   acceptPendingInvitesForUser,
+  ensureMemberDefaults,
   updateMemberProfile,
 } from "@/services/memberService";
 import {
@@ -27,6 +28,11 @@ import {
   linkUserToOrg,
   updateUserProfile as updateUserProfileDoc,
 } from "@/services/orgService";
+import {
+  isSysUnlocked,
+  resolvePlatformAdmin,
+  setSysUnlocked,
+} from "@/services/platformAdminService";
 import { can as roleCan, canAny as roleCanAny, type Permission } from "@/domain/permissions";
 import type { MemberRole, Organization, OrgMember, UserProfile } from "@/types/models";
 
@@ -38,6 +44,11 @@ interface AuthContextValue {
   role: MemberRole | null;
   loading: boolean;
   needsOrganizationSetup: boolean;
+  /** システム開発・運用者（一般ナビには出さない） */
+  isPlatformAdmin: boolean;
+  /** セッション内で隠し入口を解錠したか */
+  sysConsoleVisible: boolean;
+  unlockSysConsole: () => boolean;
   can: (permission: Permission) => boolean;
   canAny: (permissions: Permission[]) => boolean;
   login: (email: string, password: string) => Promise<void>;
@@ -63,6 +74,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [membership, setMembership] = useState<OrgMember | null>(null);
+  const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
+  const [sysConsoleVisible, setSysConsoleVisible] = useState(() => isSysUnlocked());
   const [loading, setLoading] = useState(true);
 
   const loadSession = useCallback(async (nextUser: User) => {
@@ -94,11 +107,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     setProfile(nextProfile);
 
+    const platform = await resolvePlatformAdmin({
+      uid: nextUser.uid,
+      email: nextUser.email ?? nextProfile?.email,
+    });
+    setIsPlatformAdmin(platform);
+
     if (nextProfile?.defaultOrgId) {
       try {
         const org = await getOrganization(nextProfile.defaultOrgId);
         setOrganization(org);
-        const member = await getMembership(nextProfile.defaultOrgId, nextUser.uid);
+        const patched = await ensureMemberDefaults({
+          orgId: nextProfile.defaultOrgId,
+          uid: nextUser.uid,
+          email: nextUser.email ?? nextProfile.email,
+          displayName: nextProfile.displayName || displayName,
+        }).catch(() => null);
+        const member =
+          patched ??
+          (await getMembership(nextProfile.defaultOrgId, nextUser.uid));
         setMembership(member);
       } catch (error) {
         console.error(error);
@@ -118,6 +145,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setProfile(null);
         setOrganization(null);
         setMembership(null);
+        setIsPlatformAdmin(false);
+        setSysUnlocked(false);
+        setSysConsoleVisible(false);
         setLoading(false);
         return;
       }
@@ -129,6 +159,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setProfile(null);
         setOrganization(null);
         setMembership(null);
+        setIsPlatformAdmin(false);
       } finally {
         setLoading(false);
       }
@@ -149,6 +180,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       role,
       loading,
       needsOrganizationSetup: Boolean(user && !organization),
+      isPlatformAdmin,
+      sysConsoleVisible: isPlatformAdmin && sysConsoleVisible,
+      unlockSysConsole() {
+        if (!isPlatformAdmin) return false;
+        setSysUnlocked(true);
+        setSysConsoleVisible(true);
+        return true;
+      },
       can(permission) {
         return roleCan(role, permission);
       },
@@ -200,7 +239,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await loadSession(user);
       },
     }),
-    [user, profile, organization, membership, role, loading, loadSession],
+    [
+      user,
+      profile,
+      organization,
+      membership,
+      role,
+      loading,
+      loadSession,
+      isPlatformAdmin,
+      sysConsoleVisible,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

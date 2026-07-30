@@ -13,3 +13,9 @@
 - owner / admin: 設定・メンバー・全マスタ/取引
 - accountant: マスタ・仕訳・AR/AP（メンバー・組織設定の変更は不可）
 - viewer: 読取のみ
+
+### メンバー一覧が permission-denied になる場合
+
+旧メンバーに `status` フィールドが無いと、古いルールでは評価に失敗します。
+最新 `firestore.rules`（`get('status', 'active')`）を公開してください。
+詳細は `docs/system-console.md`。

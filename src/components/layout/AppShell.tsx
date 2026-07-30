@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import type { Permission } from "@/domain/permissions";
 import { ROLE_LABELS } from "@/domain/permissions";
@@ -91,9 +91,24 @@ const navGroups: NavGroup[] = [
 ];
 
 export function AppShell() {
-  const { profile, organization, role, can, canAny, logout } = useAuth();
+  const {
+    profile,
+    organization,
+    role,
+    can,
+    canAny,
+    logout,
+    isPlatformAdmin,
+    sysConsoleVisible,
+    unlockSysConsole,
+  } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const brandClicks = useRef<{ count: number; timer: number | null }>({
+    count: 0,
+    timer: null,
+  });
 
   useEffect(() => {
     setMenuOpen(false);
@@ -125,6 +140,24 @@ export function AppShell() {
       .filter((group) => group.items.length > 0);
   }, [can, canAny]);
 
+  function onBrandActivate() {
+    // 一般ユーザーには反応しない。管理者のみ 5 連打で解錠。
+    if (!isPlatformAdmin) return;
+    const state = brandClicks.current;
+    state.count += 1;
+    if (state.timer) window.clearTimeout(state.timer);
+    state.timer = window.setTimeout(() => {
+      state.count = 0;
+      state.timer = null;
+    }, 2500);
+    if (state.count >= 5) {
+      state.count = 0;
+      if (unlockSysConsole()) {
+        navigate("/sys");
+      }
+    }
+  }
+
   return (
     <div className={`app-shell${menuOpen ? " menu-open" : ""}`}>
       <header className="mobile-topbar">
@@ -139,7 +172,15 @@ export function AppShell() {
           <span className="menu-toggle-bars" aria-hidden="true" />
         </button>
         <div className="mobile-brand">
-          <span className="brand-mark compact">H</span>
+          <button
+            type="button"
+            className="brand-mark compact brand-secret"
+            onClick={onBrandActivate}
+            aria-hidden={!isPlatformAdmin}
+            tabIndex={isPlatformAdmin ? 0 : -1}
+          >
+            H
+          </button>
           <span className="mobile-brand-name">Halo</span>
         </div>
         <span className="mobile-org" title={organization?.name ?? ""}>
@@ -156,7 +197,14 @@ export function AppShell() {
       <aside id="app-sidebar" className="sidebar">
         <div className="sidebar-header">
           <div className="brand-block">
-            <div className="brand-mark">H</div>
+            <button
+              type="button"
+              className="brand-mark brand-secret"
+              onClick={onBrandActivate}
+              aria-label="Halo"
+            >
+              H
+            </button>
             <div>
               <p className="brand-name">Halo</p>
               <p className="brand-sub">Accounting Core</p>
@@ -190,6 +238,19 @@ export function AppShell() {
               ))}
             </div>
           ))}
+          {sysConsoleVisible ? (
+            <div className="nav-group nav-group-sys">
+              <p className="nav-group-label"> </p>
+              <NavLink
+                to="/sys"
+                className={({ isActive }) =>
+                  isActive ? "nav-link active nav-link-sys" : "nav-link nav-link-sys"
+                }
+              >
+                ·
+              </NavLink>
+            </div>
+          ) : null}
         </nav>
 
         <div className="sidebar-footer">
