@@ -146,8 +146,9 @@ VITE_FIREBASE_MEASUREMENT_ID=
 
 CDN 直書きの Firebase config は禁止。
 
-## Stage 1 確認時に確定する項目
+## Stage 1 で確定した項目
 
-- デプロイ先（GitHub Pages vs Firebase Hosting）
-- CSS アプローチ（CSS Modules / 素の CSS 変数）
-- パッケージマネージャ（npm 継続）
+- デプロイ先: **GitHub Pages**（`VITE_BASE_PATH=/Halo/`）
+- CSS アプローチ: **グローバル CSS 変数**（`src/styles/global.css`）
+- パッケージマネージャ: **npm**
+- レガシー: `login.html` / `register.html` / `plan.html` / `assets/` / `core/` / `db/` / `modules/` を削除し React に一本化
