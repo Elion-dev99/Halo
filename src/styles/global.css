@@ -173,14 +173,32 @@ a.btn:hover {
   flex-direction: column;
   gap: 0.25rem;
   flex: 1;
+  overflow-y: auto;
+  padding-right: 0.15rem;
+}
+
+.nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin-bottom: 0.65rem;
+}
+
+.nav-group-label {
+  margin: 0.35rem 0.55rem 0.15rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
 }
 
 .nav-link {
   color: var(--sidebar-text);
   text-decoration: none;
-  padding: 0.65rem 0.8rem;
+  padding: 0.55rem 0.8rem;
   border-radius: 8px;
   transition: background 160ms ease, color 160ms ease, padding-left 160ms ease;
+  font-size: 0.92rem;
 }
 
 .nav-link:hover {
@@ -203,9 +221,14 @@ a.btn:hover {
 }
 
 .org-name,
-.user-name {
+.user-name,
+.user-role {
   margin: 0;
   font-size: 0.85rem;
+}
+
+.user-role {
+  opacity: 0.75;
 }
 
 .org-name {
@@ -256,6 +279,58 @@ a.btn:hover {
 .muted {
   color: var(--ink-soft);
   margin: 0;
+}
+
+.error-text {
+  color: #b42318;
+  margin: 0.75rem 0;
+}
+
+.success-text {
+  color: #027a48;
+  margin: 0.75rem 0;
+}
+
+.badge-ok,
+.badge-muted {
+  display: inline-block;
+  font-size: 0.78rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 6px;
+}
+
+.badge-ok {
+  background: rgba(2, 122, 72, 0.12);
+  color: #027a48;
+}
+
+.badge-muted {
+  background: rgba(15, 23, 42, 0.08);
+  color: var(--ink-soft);
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-top: 1.5rem;
+}
+
+.actions-cell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  justify-content: flex-end;
+}
+
+.line-row {
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px dashed var(--line);
 }
 
 .info-grid {

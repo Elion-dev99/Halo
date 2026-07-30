@@ -51,3 +51,7 @@ export function fiscalYearStartYearForDate(
   if (month >= fiscalYearStartMonth) return year;
   return year - 1;
 }
+
+export function todayISO(date = new Date()): string {
+  return formatDate(date.getFullYear(), date.getMonth() + 1, date.getDate());
+}

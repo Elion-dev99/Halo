@@ -21,11 +21,23 @@ export interface UserProfile {
   updatedAt: Date;
 }
 
+export type MemberStatus = "active" | "invited" | "disabled";
+
 export interface Organization {
   id: string;
   name: string;
   fiscalYearStartMonth: number;
   currency: "JPY";
+  /** デフォルト売掛金科目コード（例: 1100） */
+  defaultArAccountCode: string;
+  /** デフォルト買掛金科目コード（例: 2000） */
+  defaultApAccountCode: string;
+  /** デフォルト現金/預金科目コード（例: 1010） */
+  defaultCashAccountCode: string;
+  /** デフォルト売上科目コード（例: 4000） */
+  defaultRevenueAccountCode: string;
+  /** デフォルト費用科目コード（例: 5900） */
+  defaultExpenseAccountCode: string;
   createdAt: Date;
   createdBy: string;
   updatedAt: Date;
@@ -34,9 +46,38 @@ export interface Organization {
 export interface OrgMember {
   uid: string;
   role: MemberRole;
-  displayName?: string;
+  email: string;
+  displayName: string;
+  status: MemberStatus;
   joinedAt: Date;
+  updatedAt?: Date;
 }
+
+export interface OrgInvite {
+  id: string;
+  email: string;
+  role: Exclude<MemberRole, "owner">;
+  invitedBy: string;
+  createdAt: Date;
+  status: "pending" | "accepted" | "revoked";
+}
+
+export interface OrganizationSettingsInput {
+  name: string;
+  fiscalYearStartMonth: number;
+  defaultArAccountCode: string;
+  defaultApAccountCode: string;
+  defaultCashAccountCode: string;
+  defaultRevenueAccountCode: string;
+  defaultExpenseAccountCode: string;
+}
+
+export const MEMBER_ROLE_LABELS: Record<MemberRole, string> = {
+  owner: "オーナー",
+  admin: "管理者",
+  accountant: "経理",
+  viewer: "閲覧者",
+};
 
 export interface Account {
   id: string;
