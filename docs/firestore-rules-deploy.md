@@ -1,21 +1,11 @@
 # Firestore ルール公開手順
 
-組織セットアップや設定・AR/AP で権限エラーになる場合:
+詳しい手順は **`docs/SETUP_GUIDE.md`**（わかりやすい版）を見てください。
+
+要約:
 
 1. Firebase Console → プロジェクト `halo-31be8`
-2. Firestore Database → **ルール**
+2. Firestore → **ルール**
 3. リポジトリの `firestore.rules` を貼り付けて **公開**
-4. （任意）**インデックス** タブで `firestore.indexes.json` 相当の複合インデックスを作成
-   - `emailInvites/{email}/items` の `status`
-   - `organizations/{orgId}/invites` の `status`
 
-ロール別の書き込み制限:
-- owner / admin: 設定・メンバー・全マスタ/取引
-- accountant: マスタ・仕訳・AR/AP（メンバー・組織設定の変更は不可）
-- viewer: 読取のみ
-
-### メンバー一覧が permission-denied になる場合
-
-旧メンバーに `status` フィールドが無いと、古いルールでは評価に失敗します。
-最新 `firestore.rules`（`get('status', 'active')`）を公開してください。
-詳細は `docs/system-console.md`。
+メンバー一覧の permission-denied は、ほぼこの公開漏れが原因です。
