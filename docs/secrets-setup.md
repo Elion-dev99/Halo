@@ -39,6 +39,7 @@ Cloudflare が `npm run build` → `wrangler deploy` する構成です。
 | `VITE_FIREBASE_MESSAGING_SENDER_ID` | senderId |
 | `VITE_FIREBASE_APP_ID` | appId |
 | `VITE_FIREBASE_MEASUREMENT_ID` | 任意（Analytics） |
+| `VITE_PLATFORM_ADMIN_EMAILS` | 任意。隠し `/sys` 管理者メール（カンマ区切り可） |
 
 4. **Save** のあと **必ず再デプロイ**（変数はビルド時に Vite へ埋め込まれるため）
 5. Firebase Console → Authentication → Settings → **Authorized domains** に Cloudflare のホストを追加

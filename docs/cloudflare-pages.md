@@ -52,6 +52,7 @@ Settings → Variables に本番用で追加:
 - `VITE_FIREBASE_MESSAGING_SENDER_ID`
 - `VITE_FIREBASE_APP_ID`
 - `VITE_FIREBASE_MEASUREMENT_ID`（任意）
+- `VITE_PLATFORM_ADMIN_EMAILS`（任意。隠しシステム管理者。例: `you@example.com`）
 
 変更後は必ず **再デプロイ** してください（ビルド時に Vite へ埋め込まれます）。
 

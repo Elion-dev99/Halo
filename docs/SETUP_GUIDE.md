@@ -62,19 +62,55 @@
 
 ### ① 自分を管理者にする（どちらか一方で OK）
 
-#### 方法ア（かんたん・おすすめ）: メールを環境変数に書く
+### ① 自分を管理者にする（どちらか一方で OK）
 
-GitHub のリポジトリ設定で、ビルド用の変数／シークレットに追加します。
+#### 方法ア: `VITE_PLATFORM_ADMIN_EMAILS` を設定する
 
-| 名前 | 値の例 |
-|------|--------|
-| `VITE_PLATFORM_ADMIN_EMAILS` | `your@email.com` |
+**いまの本番（Cloudflare）なら、ここに書きます ↓**
 
-- 複数人いるときはカンマ区切り: `a@x.com,b@y.com`  
-- **自分のログインメールと同じ**にしてください  
-- 設定したら **Cloudflare へ再デプロイ**が必要です（Vite はビルド時に埋め込みます）
+1. [Cloudflare Dashboard](https://dash.cloudflare.com/) を開く  
+2. **Workers & Pages** → プロジェクト **`halo`**  
+3. **Settings** → **Variables and Secrets**（または Environment variables）  
+4. **Add** で次を追加:
 
-#### 方法イ: Firebase に直接書く
+| Variable name | Value（例） | 種類 |
+|---------------|-------------|------|
+| `VITE_PLATFORM_ADMIN_EMAILS` | `your@email.com` | Plain text で OK |
+
+5. **Save**  
+6. **再デプロイ**する（Variables はビルド時に埋め込まれるため、保存だけでは反映されません）  
+   - Cloudflare の **Deployments** から最新を Redeploy  
+   - または GitHub の `main` に何か push / Actions の **Deploy to Cloudflare** を手動実行  
+
+複数人: `a@x.com,b@y.com`（カンマ区切り・スペース可）  
+※ **Halo にログインしているメールと完全一致**させてください。
+
+---
+
+**GitHub Actions だけでデプロイしている場合**はこちら:
+
+1. GitHub リポジトリ → **Settings**  
+2. **Secrets and variables** → **Actions**  
+3. **New repository secret**  
+4. Name: `VITE_PLATFORM_ADMIN_EMAILS`  
+5. Secret: 自分のメール  
+6. **Deploy to Cloudflare** ワークフローを再実行  
+
+---
+
+**ローカル開発だけ**の場合:
+
+プロジェクト直下の `.env.local` に書く（git には上げない）:
+
+```
+VITE_PLATFORM_ADMIN_EMAILS=your@email.com
+```
+
+そのあと `npm run build` / `npm run dev`。
+
+---
+
+#### 方法イ（再デプロイ不要・おすすめの代替）: Firebase に直接書く
 
 1. Firebase Console → Firestore → **データの開始**（またはデータ）  
 2. コレクションを追加（まだ無ければ）  
