@@ -7,9 +7,13 @@ Firebase Auth / Firestore をバックエンドにしたクラウド会計アプ
 
 ## 動作確認（サーバーなし）
 
-独自ドメインや VPS がなくても、**Cloudflare Pages** の無料 URL（`*.pages.dev`）で確認できます。
+独自ドメインや VPS がなくても、**Cloudflare Pages / Workers** の無料 URL で確認できます。
 
-手順: [`docs/cloudflare-pages.md`](docs/cloudflare-pages.md)
+- デプロイ手順: [`docs/cloudflare-pages.md`](docs/cloudflare-pages.md)
+- **API / 秘密情報の設定場所**: [`docs/secrets-setup.md`](docs/secrets-setup.md)
+
+> `.github/workflows` の YAML にはキー本体は入りません。  
+> Cloudflare ダッシュボードの Variables、または GitHub Actions Secrets に設定します。
 
 ```bash
 npm run build
@@ -60,3 +64,5 @@ GitHub Pages 向けは Actions で `VITE_BASE_PATH=/Halo/` と Firebase secrets 
 | [docs/architecture.md](docs/architecture.md) | アーキテクチャ |
 | [docs/data-model.md](docs/data-model.md) | Firestore データモデル |
 | [docs/accounting-core-scope.md](docs/accounting-core-scope.md) | スコープ |
+| [docs/cloudflare-pages.md](docs/cloudflare-pages.md) | Cloudflare デプロイ |
+| [docs/secrets-setup.md](docs/secrets-setup.md) | Firebase / Cloudflare API の設定場所 |

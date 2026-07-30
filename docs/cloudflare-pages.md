@@ -38,7 +38,10 @@ not_found_handling = "single-page-application"
 > 「Build output directory」だけを使うクラシック Pages 接続の場合は `dist` を指定し、Deploy で wrangler を使わない設定でも動きます。  
 > いまのエラーログは **wrangler deploy 経路** なので、上記の `wrangler.toml` 修正が必要です。
 
-### 環境変数（Firebase）
+### 環境変数（Firebase）— ここが未設定だとアプリが動けません
+
+ワークフロー YAML ではなく、**Cloudflare の Variables** に入れます。  
+一覧と GitHub Secrets との違い: [`secrets-setup.md`](secrets-setup.md)
 
 Settings → Variables に本番用で追加:
 
