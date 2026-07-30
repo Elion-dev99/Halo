@@ -602,26 +602,29 @@ a.btn:hover {
   .mobile-topbar {
     display: flex;
     align-items: center;
-    gap: 0.65rem;
+    gap: 0.5rem;
     position: sticky;
     top: 0;
     z-index: 30;
-    padding: 0.65rem 0.85rem;
-    background: linear-gradient(180deg, #0d3152 0%, var(--sidebar) 100%);
+    min-height: 48px;
+    height: 48px;
+    padding: 0 0.75rem;
+    background: var(--sidebar);
     color: #fff;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   }
 
   .menu-toggle {
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 2rem;
+    height: 2rem;
     border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
+    border-radius: 6px;
     background: rgba(255, 255, 255, 0.06);
     display: grid;
     place-items: center;
     cursor: pointer;
     flex-shrink: 0;
+    padding: 0;
   }
 
   .menu-toggle-bars,
@@ -673,24 +676,27 @@ a.btn:hover {
   }
 
   .brand-mark.compact {
-    width: 1.8rem;
-    height: 1.8rem;
-    font-size: 0.85rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    font-size: 0.75rem;
+    border-radius: 5px;
   }
 
   .mobile-brand-name {
     font-weight: 700;
-    font-size: 1.05rem;
+    font-size: 0.95rem;
+    line-height: 1;
   }
 
   .mobile-org {
     margin-left: auto;
-    max-width: 40%;
+    max-width: 42%;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 0.78rem;
-    opacity: 0.8;
+    font-size: 0.75rem;
+    opacity: 0.85;
+    line-height: 1;
   }
 
   .sidebar-backdrop {
@@ -822,9 +828,72 @@ a.btn:hover {
   }
 }
 
-.setup-panel {
+.journal-line-list {
   display: grid;
-  gap: 1rem;
+  gap: 0.75rem;
+}
+
+.journal-line-card {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.85rem;
+  background: #fbfcfe;
+  display: grid;
+  gap: 0.7rem;
+}
+
+.journal-line-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.journal-totals {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  padding: 0.85rem;
+  border-radius: 10px;
+  background: rgba(11, 110, 153, 0.06);
+  border: 1px solid var(--line);
+}
+
+.journal-totals > div {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.journal-actions {
+  flex-wrap: wrap;
+}
+
+@media (max-width: 900px) {
+  .journal-totals {
+    grid-template-columns: 1fr;
+  }
+
+  .journal-actions .btn {
+    width: 100%;
+  }
+
+  /* legacy table layout removed for journal lines */
+  .journal-lines thead {
+    display: table-header-group;
+  }
+
+  .journal-lines tbody tr,
+  .journal-lines tfoot tr {
+    display: table-row;
+    grid-template-columns: none;
+    padding: 0;
+    border-bottom: none;
+  }
+
+  .journal-lines tbody td:first-child,
+  .journal-lines tfoot th:first-child,
+  .journal-lines tbody td:last-child {
+    grid-column: auto;
+  }
 }
 
 .setup-panel .panel {

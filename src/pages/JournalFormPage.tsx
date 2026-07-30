@@ -1,31 +1,32 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { useAuth } from "@/context/AuthContext";
 import { MissingOrganizationNotice } from "@/components/OrganizationSetupPanel";
+import { useAuth } from "@/context/AuthContext";
+import {
+  canDeleteJournal,
+  canEditJournal,
+  canPostJournal,
+  canVoidJournal,
+  createEmptyLine,
+  createInitialDraft,
+  formatYen,
+  setLineAmount,
+  summarizeLines,
+  todayISO,
+  validateJournalDraft,
+} from "@/domain/journalEngine";
 import { listAccounts } from "@/services/accountService";
 import {
   createAndPostJournal,
   createDraftJournal,
+  deleteDraftJournal,
   getJournalWithLines,
   postJournal,
   updateDraftJournal,
   voidJournal,
-  deleteDraftJournal,
 } from "@/services/journalService";
 import type { Account, JournalLineInput, JournalWithLines } from "@/types/models";
 import { JOURNAL_STATUS_LABELS } from "@/types/models";
-import { formatYen, summarizeLines } from "@/utils/accounting";
-
-function blankLine(): JournalLineInput {
-  return { accountId: "", debit: 0, credit: 0, memo: "" };
-}
-
-function today(): string {
-  const d = new Date();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${d.getFullYear()}-${m}-${day}`;
-}
 
 export function JournalFormPage() {
   const { id } = useParams();
@@ -36,15 +37,19 @@ export function JournalFormPage() {
 
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [journal, setJournal] = useState<JournalWithLines | null>(null);
-  const [date, setDate] = useState(today());
+  const [date, setDate] = useState(todayISO());
   const [memo, setMemo] = useState("");
-  const [lines, setLines] = useState<JournalLineInput[]>([
-    blankLine(),
-    blankLine(),
-  ]);
+  const [lines, setLines] = useState<JournalLineInput[]>(
+    createInitialDraft().lines,
+  );
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const accountsById = useMemo(
+    () => new Map(accounts.map((a) => [a.id, a])),
+    [accounts],
+  );
 
   const postableAccounts = useMemo(
     () => accounts.filter((a) => a.isPostable && a.isActive),
@@ -52,18 +57,25 @@ export function JournalFormPage() {
   );
 
   const totals = summarizeLines(lines);
-  const balanced = totals.debit === totals.credit && totals.debit > 0;
-  const readOnly = Boolean(journal && journal.status !== "draft");
+  const validationError = validateJournalDraft(
+    { date, memo, lines },
+    accountsById,
+  );
+  const readOnly = Boolean(journal && !canEditJournal(journal.status));
 
   useEffect(() => {
     if (!orgId) return;
+    let cancelled = false;
     void (async () => {
+      setError(null);
       try {
         const aRows = await listAccounts(orgId);
+        if (cancelled) return;
         setAccounts(aRows);
         if (!isNew && id) {
           setLoading(true);
           const row = await getJournalWithLines(orgId, id);
+          if (cancelled) return;
           if (!row) {
             setError("仕訳が見つかりません。");
             return;
@@ -72,21 +84,26 @@ export function JournalFormPage() {
           setDate(row.date);
           setMemo(row.memo);
           setLines(
-            row.lines.map((l) => ({
-              accountId: l.accountId,
-              debit: l.debit,
-              credit: l.credit,
-              memo: l.memo,
-            })),
+            row.lines.length >= 2
+              ? row.lines.map((l) => ({
+                  accountId: l.accountId,
+                  debit: l.debit,
+                  credit: l.credit,
+                  memo: l.memo,
+                }))
+              : createInitialDraft().lines,
           );
         }
       } catch (err) {
         console.error(err);
-        setError("読み込みに失敗しました。");
+        if (!cancelled) setError("読み込みに失敗しました。");
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     })();
+    return () => {
+      cancelled = true;
+    };
   }, [orgId, id, isNew]);
 
   function updateLine(index: number, patch: Partial<JournalLineInput>) {
@@ -98,6 +115,10 @@ export function JournalFormPage() {
   async function saveDraft(event?: FormEvent) {
     event?.preventDefault();
     if (!orgId || !user || readOnly) return;
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
     setSaving(true);
     setError(null);
     try {
@@ -133,6 +154,10 @@ export function JournalFormPage() {
 
   async function saveAndPost() {
     if (!orgId || !user || readOnly) return;
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
     setSaving(true);
     setError(null);
     try {
@@ -143,6 +168,7 @@ export function JournalFormPage() {
           date,
           memo,
           lines,
+          accounts,
         });
         navigate(`/journals/${newId}`, { replace: true });
       } else if (id) {
@@ -155,7 +181,6 @@ export function JournalFormPage() {
           accounts,
         });
         await postJournal({ orgId, journalId: id, uid: user.uid });
-        navigate(`/journals/${id}`, { replace: true });
         const refreshed = await getJournalWithLines(orgId, id);
         setJournal(refreshed);
       }
@@ -168,7 +193,8 @@ export function JournalFormPage() {
   }
 
   async function onVoid() {
-    if (!orgId || !user || !id || isNew) return;
+    if (!orgId || !user || !id || isNew || !journal) return;
+    if (!canVoidJournal(journal.status)) return;
     const reason = window.prompt("取消理由（任意）") ?? "";
     setSaving(true);
     setError(null);
@@ -185,7 +211,8 @@ export function JournalFormPage() {
   }
 
   async function onDeleteDraft() {
-    if (!orgId || !id || isNew) return;
+    if (!orgId || !id || isNew || !journal) return;
+    if (!canDeleteJournal(journal.status)) return;
     if (!window.confirm("この下書きを削除しますか？")) return;
     setSaving(true);
     try {
@@ -230,7 +257,7 @@ export function JournalFormPage() {
 
       {error ? <p className="form-error banner-error">{error}</p> : null}
 
-      <form className="panel stack-form" onSubmit={(e) => void saveDraft(e)}>
+      <form className="panel stack-form journal-form" onSubmit={(e) => void saveDraft(e)}>
         <div className="form-grid-2">
           <label>
             仕訳日
@@ -253,113 +280,112 @@ export function JournalFormPage() {
           </label>
         </div>
 
-        <div className="table-wrap">
-          <table className="data-table journal-lines">
-            <thead>
-              <tr>
-                <th>勘定科目</th>
-                <th>借方</th>
-                <th>貸方</th>
-                <th>行摘要</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
-              {lines.map((line, index) => (
-                <tr key={index}>
-                  <td>
-                    <select
-                      disabled={readOnly}
-                      required
-                      value={line.accountId}
-                      onChange={(e) =>
-                        updateLine(index, { accountId: e.target.value })
-                      }
-                    >
-                      <option value="">選択</option>
-                      {postableAccounts.map((a) => (
-                        <option key={a.id} value={a.id}>
-                          {a.code} {a.name}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-                  <td>
-                    <input
-                      type="number"
-                      min={0}
-                      disabled={readOnly}
-                      value={line.debit || ""}
-                      onChange={(e) =>
-                        updateLine(index, {
-                          debit: Number(e.target.value) || 0,
-                          credit: 0,
-                        })
-                      }
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="number"
-                      min={0}
-                      disabled={readOnly}
-                      value={line.credit || ""}
-                      onChange={(e) =>
-                        updateLine(index, {
-                          credit: Number(e.target.value) || 0,
-                          debit: 0,
-                        })
-                      }
-                    />
-                  </td>
-                  <td>
-                    <input
-                      disabled={readOnly}
-                      value={line.memo}
-                      onChange={(e) =>
-                        updateLine(index, { memo: e.target.value })
-                      }
-                    />
-                  </td>
-                  <td>
-                    {!readOnly && lines.length > 2 ? (
-                      <button
-                        type="button"
-                        className="linkish"
-                        onClick={() =>
-                          setLines((prev) => prev.filter((_, i) => i !== index))
-                        }
-                      >
-                        削除
-                      </button>
-                    ) : null}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-            <tfoot>
-              <tr>
-                <th>合計</th>
-                <th className="num">{formatYen(totals.debit)}</th>
-                <th className="num">{formatYen(totals.credit)}</th>
-                <th colSpan={2}>
-                  {balanced ? (
-                    <span className="tag tag-ok">貸借一致</span>
-                  ) : (
-                    <span className="tag">未一致</span>
-                  )}
-                </th>
-              </tr>
-            </tfoot>
-          </table>
+        <div className="journal-line-list" role="list">
+          {lines.map((line, index) => (
+            <div className="journal-line-card" role="listitem" key={index}>
+              <div className="journal-line-card-head">
+                <strong>明細 {index + 1}</strong>
+                {!readOnly && lines.length > 2 ? (
+                  <button
+                    type="button"
+                    className="linkish"
+                    onClick={() =>
+                      setLines((prev) => prev.filter((_, i) => i !== index))
+                    }
+                  >
+                    削除
+                  </button>
+                ) : null}
+              </div>
+
+              <label>
+                勘定科目
+                <select
+                  disabled={readOnly}
+                  value={line.accountId}
+                  onChange={(e) =>
+                    updateLine(index, { accountId: e.target.value })
+                  }
+                >
+                  <option value="">選択してください</option>
+                  {postableAccounts.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.code} {a.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <div className="form-grid-2">
+                <label>
+                  借方
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min={0}
+                    step={1}
+                    disabled={readOnly}
+                    value={line.debit || ""}
+                    onChange={(e) =>
+                      updateLine(index, setLineAmount(line, "debit", e.target.value))
+                    }
+                  />
+                </label>
+                <label>
+                  貸方
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min={0}
+                    step={1}
+                    disabled={readOnly}
+                    value={line.credit || ""}
+                    onChange={(e) =>
+                      updateLine(index, setLineAmount(line, "credit", e.target.value))
+                    }
+                  />
+                </label>
+              </div>
+
+              <label>
+                行摘要
+                <input
+                  disabled={readOnly}
+                  value={line.memo}
+                  onChange={(e) => updateLine(index, { memo: e.target.value })}
+                  placeholder="任意"
+                />
+              </label>
+            </div>
+          ))}
+        </div>
+
+        <div className="journal-totals">
+          <div>
+            <span className="muted">借方合計</span>
+            <strong>{formatYen(totals.debit)}</strong>
+          </div>
+          <div>
+            <span className="muted">貸方合計</span>
+            <strong>{formatYen(totals.credit)}</strong>
+          </div>
+          <div>
+            {totals.balanced ? (
+              <span className="tag tag-ok">貸借一致</span>
+            ) : (
+              <span className="tag">
+                差額 {formatYen(Math.abs(totals.difference))}
+              </span>
+            )}
+          </div>
         </div>
 
         {!readOnly ? (
-          <div className="toolbar">
+          <div className="toolbar journal-actions">
             <button
               type="button"
               className="btn btn-secondary"
-              onClick={() => setLines((prev) => [...prev, blankLine()])}
+              onClick={() => setLines((prev) => [...prev, createEmptyLine()])}
             >
               行を追加
             </button>
@@ -369,12 +395,12 @@ export function JournalFormPage() {
             <button
               type="button"
               className="btn btn-primary"
-              disabled={saving}
+              disabled={saving || !canPostJournal(journal?.status ?? "draft")}
               onClick={() => void saveAndPost()}
             >
               転記する
             </button>
-            {!isNew && journal?.status === "draft" ? (
+            {!isNew && journal && canDeleteJournal(journal.status) ? (
               <button
                 type="button"
                 className="btn btn-secondary"
@@ -386,8 +412,8 @@ export function JournalFormPage() {
             ) : null}
           </div>
         ) : (
-          <div className="toolbar">
-            {journal?.status === "posted" ? (
+          <div className="toolbar journal-actions">
+            {journal && canVoidJournal(journal.status) && journal.status === "posted" ? (
               <button
                 type="button"
                 className="btn btn-secondary"
