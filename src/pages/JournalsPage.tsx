@@ -1,24 +1,23 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "@/context/AuthContext";
 import { MissingOrganizationNotice } from "@/components/OrganizationSetupPanel";
+import { useAuth } from "@/context/AuthContext";
 import { listAccounts } from "@/services/accountService";
-import { listJournals, getJournalLines } from "@/services/journalService";
+import { listJournalsWithAccountIds } from "@/services/journalService";
 import { listPeriods } from "@/services/periodService";
 import type { Account, AccountingPeriod, Journal, JournalStatus } from "@/types/models";
 import { JOURNAL_STATUS_LABELS } from "@/types/models";
-import { formatYen } from "@/utils/accounting";
+import { formatYen } from "@/domain/journalEngine";
+
+type JournalRow = Journal & { accountIds: string[] };
 
 export function JournalsPage() {
   const { organization } = useAuth();
   const orgId = organization?.id;
 
-  const [journals, setJournals] = useState<Journal[]>([]);
+  const [journals, setJournals] = useState<JournalRow[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [periods, setPeriods] = useState<AccountingPeriod[]>([]);
-  const [accountLines, setAccountLines] = useState<Map<string, string[]>>(
-    new Map(),
-  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<JournalStatus | "all">("all");
@@ -32,25 +31,13 @@ export function JournalsPage() {
       setError(null);
       try {
         const [jRows, aRows, pRows] = await Promise.all([
-          listJournals(orgId),
+          listJournalsWithAccountIds(orgId),
           listAccounts(orgId),
           listPeriods(orgId),
         ]);
         setJournals(jRows);
         setAccounts(aRows);
         setPeriods(pRows);
-
-        const lineMap = new Map<string, string[]>();
-        await Promise.all(
-          jRows.map(async (j) => {
-            const lines = await getJournalLines(orgId, j.id);
-            lineMap.set(
-              j.id,
-              lines.map((l) => l.accountId),
-            );
-          }),
-        );
-        setAccountLines(lineMap);
       } catch (err) {
         console.error(err);
         setError("仕訳一覧の読み込みに失敗しました。");
@@ -70,22 +57,20 @@ export function JournalsPage() {
     return journals.filter((j) => {
       if (statusFilter !== "all" && j.status !== statusFilter) return false;
       if (periodFilter !== "all") {
-        if (j.periodId !== periodFilter) {
-          // drafts: match by date within period
-          const period = periods.find((p) => p.id === periodFilter);
-          if (!period) return false;
-          if (!(period.startDate <= j.date && j.date <= period.endDate)) {
-            return false;
-          }
+        const period = periods.find((p) => p.id === periodFilter);
+        if (!period) return false;
+        if (j.periodId) {
+          if (j.periodId !== periodFilter) return false;
+        } else if (!(period.startDate <= j.date && j.date <= period.endDate)) {
+          return false;
         }
       }
-      if (accountFilter !== "all") {
-        const ids = accountLines.get(j.id) ?? [];
-        if (!ids.includes(accountFilter)) return false;
+      if (accountFilter !== "all" && !j.accountIds.includes(accountFilter)) {
+        return false;
       }
       return true;
     });
-  }, [journals, statusFilter, periodFilter, accountFilter, periods, accountLines]);
+  }, [journals, statusFilter, periodFilter, accountFilter, periods]);
 
   if (!orgId) {
     return <MissingOrganizationNotice />;

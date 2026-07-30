@@ -14,27 +14,50 @@ service cloud.firestore {
         && exists(/databases/$(database)/documents/organizations/$(orgId)/members/$(request.auth.uid));
     }
 
+    function isOrgCreator(orgId) {
+      return signedIn()
+        && get(/databases/$(database)/documents/organizations/$(orgId)).data.createdBy
+          == request.auth.uid;
+    }
+
     match /users/{uid} {
       allow read, write: if isSelf(uid);
     }
 
-    // Allow org creation by signed-in users; subsequent access requires membership.
     match /organizations/{orgId} {
       allow create: if signedIn()
-        && request.resource.data.createdBy == request.auth.uid;
-      allow read, update, delete: if isOrgMember(orgId);
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.name is string
+        && request.resource.data.currency == 'JPY';
 
-      match /members/{uid} {
-        // Creator can write self as owner during registration bootstrap.
+      allow read: if isOrgMember(orgId) || isOrgCreator(orgId);
+      allow update, delete: if isOrgMember(orgId);
+
+      match /members/{memberId} {
+        allow read: if isOrgMember(orgId) || request.auth.uid == memberId;
         allow create: if signedIn()
-          && (
-            (uid == request.auth.uid && request.resource.data.role == 'owner')
-            || isOrgMember(orgId)
-          );
-        allow read, update, delete: if isOrgMember(orgId);
+          && request.auth.uid == memberId
+          && request.resource.data.role == 'owner';
+        allow update, delete: if isOrgMember(orgId);
       }
 
-      match /{document=**} {
+      match /accounts/{accountId} {
+        allow read, write: if isOrgMember(orgId);
+      }
+
+      match /periods/{periodId} {
+        allow read, write: if isOrgMember(orgId);
+      }
+
+      match /journals/{journalId} {
+        allow read, write: if isOrgMember(orgId);
+
+        match /lines/{lineId} {
+          allow read, write: if isOrgMember(orgId);
+        }
+      }
+
+      match /meta/{docId} {
         allow read, write: if isOrgMember(orgId);
       }
     }
