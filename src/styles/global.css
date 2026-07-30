@@ -822,6 +822,19 @@ a.btn:hover {
   }
 }
 
+.setup-panel {
+  display: grid;
+  gap: 1rem;
+}
+
+.setup-panel .panel {
+  max-width: 480px;
+}
+
+.setup-foot {
+  margin: 0.5rem 0 0;
+}
+
 @media (min-width: 901px) {
   .mobile-topbar,
   .sidebar-backdrop,

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
+import { MissingOrganizationNotice } from "@/components/OrganizationSetupPanel";
 import { listAccounts } from "@/services/accountService";
 import { listJournals, getJournalLines } from "@/services/journalService";
 import { listPeriods } from "@/services/periodService";
@@ -87,11 +88,7 @@ export function JournalsPage() {
   }, [journals, statusFilter, periodFilter, accountFilter, periods, accountLines]);
 
   if (!orgId) {
-    return (
-      <section className="page">
-        <p className="muted">組織が設定されていません。</p>
-      </section>
-    );
+    return <MissingOrganizationNotice />;
   }
 
   return (

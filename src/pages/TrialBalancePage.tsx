@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { MissingOrganizationNotice } from "@/components/OrganizationSetupPanel";
 import { useAuth } from "@/context/AuthContext";
 import {
   buildTrialBalance,
@@ -61,6 +62,10 @@ export function TrialBalancePage() {
       ]),
       ["", "合計", "", String(totalDebit), String(totalCredit)],
     ]);
+  }
+
+  if (!orgId) {
+    return <MissingOrganizationNotice />;
   }
 
   return (

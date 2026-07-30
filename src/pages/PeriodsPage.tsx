@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { MissingOrganizationNotice } from "@/components/OrganizationSetupPanel";
 import {
   createFiscalYearPeriods,
   createPeriod,
@@ -121,11 +122,7 @@ export function PeriodsPage() {
   }
 
   if (!orgId) {
-    return (
-      <section className="page">
-        <p className="muted">組織が設定されていません。</p>
-      </section>
-    );
+    return <MissingOrganizationNotice />;
   }
 
   return (

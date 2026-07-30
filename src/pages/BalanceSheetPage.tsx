@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { MissingOrganizationNotice } from "@/components/OrganizationSetupPanel";
 import { useAuth } from "@/context/AuthContext";
 import {
   buildBalanceSheet,
@@ -78,6 +79,10 @@ export function BalanceSheetPage() {
       ["純資産合計", "", "", String(sheet.totalEquity)],
       ["負債・純資産合計", "", "", String(sheet.totalLiabilitiesAndEquity)],
     ]);
+  }
+
+  if (!orgId) {
+    return <MissingOrganizationNotice />;
   }
 
   return (

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { MissingOrganizationNotice } from "@/components/OrganizationSetupPanel";
 import { useAuth } from "@/context/AuthContext";
 import {
   buildGeneralLedger,
@@ -65,6 +66,10 @@ export function GeneralLedgerPage() {
         String(e.balance),
       ]),
     ]);
+  }
+
+  if (!orgId) {
+    return <MissingOrganizationNotice />;
   }
 
   return (
