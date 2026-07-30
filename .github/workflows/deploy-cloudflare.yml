@@ -1,23 +1,19 @@
-# Deploy to Cloudflare via GitHub Actions (optional)
+# Deploy to Cloudflare via GitHub Actions
 #
-# Secrets must be set in GitHub → Settings → Secrets → Actions
+# Secrets: GitHub → Settings → Secrets and variables → Actions
 # See docs/secrets-setup.md
 #
 # Required:
 #   VITE_FIREBASE_* (see .env.example)
 #   CLOUDFLARE_API_TOKEN
 #   CLOUDFLARE_ACCOUNT_ID
-#
-# Default: manual only (workflow_dispatch) so missing secrets
-# do not fail every push to main. Enable push trigger after secrets exist.
 
 name: Deploy to Cloudflare
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
-  # Uncomment after repository secrets are configured:
-  # push:
-  #   branches: [main]
 
 jobs:
   deploy:
