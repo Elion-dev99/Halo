@@ -65,6 +65,11 @@ export function OrganizationSetupPanel({
           />
         </label>
         {error ? <p className="form-error">{error}</p> : null}
+        <p className="muted small">
+          権限エラーが出る場合は Firebase Console → Firestore → ルール に{" "}
+          <code>firestore.rules</code> を公開してください（
+          <code>docs/firestore-rules-deploy.md</code>）。
+        </p>
         <button className="btn btn-primary" type="submit" disabled={saving}>
           {saving ? "作成中…" : "組織を作成して開始"}
         </button>

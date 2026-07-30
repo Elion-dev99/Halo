@@ -14,27 +14,57 @@ service cloud.firestore {
         && exists(/databases/$(database)/documents/organizations/$(orgId)/members/$(request.auth.uid));
     }
 
+    function isOrgCreator(orgId) {
+      return signedIn()
+        && get(/databases/$(database)/documents/organizations/$(orgId)).data.createdBy
+          == request.auth.uid;
+    }
+
     match /users/{uid} {
       allow read, write: if isSelf(uid);
     }
 
-    // Allow org creation by signed-in users; subsequent access requires membership.
     match /organizations/{orgId} {
+      // 新規組織の作成（登録・セットアップ）
       allow create: if signedIn()
-        && request.resource.data.createdBy == request.auth.uid;
-      allow read, update, delete: if isOrgMember(orgId);
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.name is string
+        && request.resource.data.currency == 'JPY';
 
-      match /members/{uid} {
-        // Creator can write self as owner during registration bootstrap.
+      // メンバー、または作成者自身が読める（セットアップ直後用）
+      allow read: if isOrgMember(orgId) || isOrgCreator(orgId);
+
+      allow update, delete: if isOrgMember(orgId);
+
+      match /members/{memberId} {
+        allow read: if isOrgMember(orgId) || request.auth.uid == memberId;
+
+        // 自分が owner として参加（組織セットアップ）
         allow create: if signedIn()
-          && (
-            (uid == request.auth.uid && request.resource.data.role == 'owner')
-            || isOrgMember(orgId)
-          );
-        allow read, update, delete: if isOrgMember(orgId);
+          && request.auth.uid == memberId
+          && request.resource.data.role == 'owner';
+
+        allow update, delete: if isOrgMember(orgId);
       }
 
-      match /{document=**} {
+      // ワイルドカードは使わず、パスを明示（メンバー作成との衝突を避ける）
+      match /accounts/{accountId} {
+        allow read, write: if isOrgMember(orgId);
+      }
+
+      match /periods/{periodId} {
+        allow read, write: if isOrgMember(orgId);
+      }
+
+      match /journals/{journalId} {
+        allow read, write: if isOrgMember(orgId);
+
+        match /lines/{lineId} {
+          allow read, write: if isOrgMember(orgId);
+        }
+      }
+
+      match /meta/{docId} {
         allow read, write: if isOrgMember(orgId);
       }
     }
