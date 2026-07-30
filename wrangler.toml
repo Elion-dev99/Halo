@@ -1,6 +1,5 @@
 # Halo — Cloudflare Workers static assets (SPA)
-# Cloudflare dashboard runs `wrangler deploy`; configure assets here (not pages_build_output_dir).
-name = "halo-accounting"
+name = "halo"
 compatibility_date = "2026-07-30"
 
 [assets]

@@ -50,7 +50,16 @@ Cloudflare が `npm run build` → `wrangler deploy` する構成です。
 
 ---
 
-## B. GitHub Actions でデプロイする場合（任意）
+## B. GitHub Actions でデプロイする場合
+
+Secrets 登録済みなら次で実行できます。
+
+1. GitHub リポジトリ → **Actions**
+2. 左の **Deploy to Cloudflare**
+3. **Run workflow** → branch `main` → **Run workflow**
+4. 緑になれば成功。URL 例: `https://halo.elion-dev08.workers.dev`
+
+`main` への push でも自動実行されます（`deploy-cloudflare.yml`）。
 
 対象ワークフロー:
 
