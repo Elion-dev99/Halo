@@ -5,6 +5,8 @@ import { AppShell } from "@/components/layout/AppShell";
 import { LoginPage } from "@/pages/LoginPage";
 import { RegisterPage } from "@/pages/RegisterPage";
 import { DashboardPage } from "@/pages/DashboardPage";
+import { AccountsPage } from "@/pages/AccountsPage";
+import { PeriodsPage } from "@/pages/PeriodsPage";
 import { PlaceholderPage } from "@/pages/PlaceholderPage";
 
 const basename = import.meta.env.BASE_URL.replace(/\/$/, "") || undefined;
@@ -24,14 +26,8 @@ export default function App() {
             }
           >
             <Route path="/" element={<DashboardPage />} />
-            <Route
-              path="/accounts"
-              element={<PlaceholderPage title="勘定科目" stage="Stage 2" />}
-            />
-            <Route
-              path="/periods"
-              element={<PlaceholderPage title="会計期間" stage="Stage 2" />}
-            />
+            <Route path="/accounts" element={<AccountsPage />} />
+            <Route path="/periods" element={<PeriodsPage />} />
             <Route
               path="/journals"
               element={<PlaceholderPage title="仕訳" stage="Stage 3" />}
