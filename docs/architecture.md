@@ -28,7 +28,7 @@ Halo を Vanilla JS MVP から **React SPA + Firebase** に全面改修する。
 | ルーティング | React Router | SPA 標準 |
 | 認証 | Firebase Authentication | 現行資産の継続 |
 | DB | Cloud Firestore | 現行資産の継続、リアルタイム可 |
-| デプロイ | GitHub Pages または Firebase Hosting（Stage 1 で確定） | 現行は GitHub Pages |
+| デプロイ | **Cloudflare Pages**（動作確認用 `*.pages.dev`） / 任意で GitHub Pages | 独自サーバー不要 |
 
 ## ディレクトリ構成（Stage 1 以降の目標）
 
@@ -148,7 +148,7 @@ CDN 直書きの Firebase config は禁止。
 
 ## Stage 1 で確定した項目
 
-- デプロイ先: **GitHub Pages**（`VITE_BASE_PATH=/Halo/`）
+- デプロイ先: **Cloudflare Pages**（動作確認の主経路。`docs/cloudflare-pages.md`）／旧 GitHub Pages ワークフローも残置
 - CSS アプローチ: **グローバル CSS 変数**（`src/styles/global.css`）
 - パッケージマネージャ: **npm**
 - レガシー: `login.html` / `register.html` / `plan.html` / `assets/` / `core/` / `db/` / `modules/` を削除し React に一本化

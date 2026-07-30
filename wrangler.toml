@@ -1,0 +1,5 @@
+# Halo — Cloudflare Pages
+# Deploy: npm run build && npx wrangler pages deploy dist --project-name=halo-accounting
+name = "halo-accounting"
+compatibility_date = "2026-07-30"
+pages_build_output_dir = "dist"

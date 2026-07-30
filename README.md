@@ -5,6 +5,19 @@ Firebase Auth / Firestore をバックエンドにしたクラウド会計アプ
 
 設計・進捗は [`docs/WORKPLAN.md`](docs/WORKPLAN.md) を参照してください。
 
+## 動作確認（サーバーなし）
+
+独自ドメインや VPS がなくても、**Cloudflare Pages** の無料 URL（`*.pages.dev`）で確認できます。
+
+手順: [`docs/cloudflare-pages.md`](docs/cloudflare-pages.md)
+
+```bash
+npm run build
+npx wrangler pages deploy dist --project-name=halo-accounting
+```
+
+または Cloudflare ダッシュボードで GitHub リポジトリを接続してください。
+
 ## 機能（会計コア）
 
 - 認証・組織作成（登録時）

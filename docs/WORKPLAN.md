@@ -122,3 +122,4 @@
 | 2026-07-30 | Stage 0 OK。Stage 1（React + Firebase 土台）実装。確認待ちへ |
 | 2026-07-30 | Stage 1 OK。Stage 2（期間・勘定科目マスタ）実装。確認待ちへ |
 | 2026-07-30 | 利用者指示により Stage 2〜4 の中間確認を省略。Stage 3・4 を連続実装し Stage 4 確認待ちへ |
+| 2026-07-30 | Cloudflare Pages 向け設定・手順を追加（`docs/cloudflare-pages.md`） |

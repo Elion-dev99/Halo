@@ -1,35 +1,51 @@
 import { initializeApp, getApps, type FirebaseApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getAuth, type Auth } from "firebase/auth";
+import { getFirestore, type Firestore } from "firebase/firestore";
 
-function requireEnv(name: keyof ImportMetaEnv): string {
+const REQUIRED_KEYS = [
+  "VITE_FIREBASE_API_KEY",
+  "VITE_FIREBASE_AUTH_DOMAIN",
+  "VITE_FIREBASE_PROJECT_ID",
+  "VITE_FIREBASE_STORAGE_BUCKET",
+  "VITE_FIREBASE_MESSAGING_SENDER_ID",
+  "VITE_FIREBASE_APP_ID",
+] as const;
+
+function readEnv(name: (typeof REQUIRED_KEYS)[number]): string | undefined {
   const value = import.meta.env[name];
-  if (!value || value.startsWith("your_")) {
-    throw new Error(
-      `Missing Firebase env: ${name}. Copy .env.example to .env.local and fill values.`,
-    );
-  }
+  if (!value || String(value).startsWith("your_")) return undefined;
   return value;
 }
 
-const firebaseConfig = {
-  apiKey: requireEnv("VITE_FIREBASE_API_KEY"),
-  authDomain: requireEnv("VITE_FIREBASE_AUTH_DOMAIN"),
-  projectId: requireEnv("VITE_FIREBASE_PROJECT_ID"),
-  storageBucket: requireEnv("VITE_FIREBASE_STORAGE_BUCKET"),
-  messagingSenderId: requireEnv("VITE_FIREBASE_MESSAGING_SENDER_ID"),
-  appId: requireEnv("VITE_FIREBASE_APP_ID"),
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
-};
-
-let app: FirebaseApp;
-
-if (getApps().length === 0) {
-  app = initializeApp(firebaseConfig);
-} else {
-  app = getApps()[0]!;
+export function getMissingFirebaseEnv(): string[] {
+  return REQUIRED_KEYS.filter((key) => !readEnv(key));
 }
 
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+export const firebaseConfigError =
+  getMissingFirebaseEnv().length > 0
+    ? `Firebase 環境変数が未設定です: ${getMissingFirebaseEnv().join(", ")}`
+    : null;
+
+let app: FirebaseApp | null = null;
+let authInstance: Auth | null = null;
+let dbInstance: Firestore | null = null;
+
+if (!firebaseConfigError) {
+  const firebaseConfig = {
+    apiKey: readEnv("VITE_FIREBASE_API_KEY")!,
+    authDomain: readEnv("VITE_FIREBASE_AUTH_DOMAIN")!,
+    projectId: readEnv("VITE_FIREBASE_PROJECT_ID")!,
+    storageBucket: readEnv("VITE_FIREBASE_STORAGE_BUCKET")!,
+    messagingSenderId: readEnv("VITE_FIREBASE_MESSAGING_SENDER_ID")!,
+    appId: readEnv("VITE_FIREBASE_APP_ID")!,
+    measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
+  };
+
+  app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]!;
+  authInstance = getAuth(app);
+  dbInstance = getFirestore(app);
+}
+
+export const auth = authInstance as Auth;
+export const db = dbInstance as Firestore;
 export default app;
