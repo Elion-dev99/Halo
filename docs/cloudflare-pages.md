@@ -80,7 +80,12 @@ npx wrangler deploy
 
 ---
 
-## 動作確認チェックリスト
+## SPA ルーティング
+
+`wrangler.toml` の `not_found_handling = "single-page-application"` で、存在しないパスは `index.html` を返します。
+
+> 旧来の `public/_redirects`（`/* /index.html 200`）は **使わない**でください。  
+> Workers の assets + SPA 設定と併用すると、無限ループ検知（code 100324）でデプロイが失敗します。
 
 1. 公開 URL が開く
 2. `/login` や `/journals/new` を直接開いても 404 にならない
@@ -92,6 +97,7 @@ npx wrangler deploy
 | 症状 | 確認 |
 |------|------|
 | Missing entry-point / assets directory | この修正入りの `wrangler.toml` か。先に `npm run build` で `dist/` があるか |
+| Invalid `_redirects` / Infinite loop (100324) | `public/_redirects` を置かない。SPA は `not_found_handling` に任せる |
 | Missing Firebase env | Variables 未設定 or 再デプロイ忘れ |
 | unauthorized-domain | Firebase Authorized domains に公開ホストを追加 |
 | Firestore permission denied | rules 未デプロイ、または未ログイン |
