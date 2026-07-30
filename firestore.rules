@@ -1,0 +1,42 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function isOrgMember(orgId) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/organizations/$(orgId)/members/$(request.auth.uid));
+    }
+
+    match /users/{uid} {
+      allow read, write: if isSelf(uid);
+    }
+
+    // Allow org creation by signed-in users; subsequent access requires membership.
+    match /organizations/{orgId} {
+      allow create: if signedIn()
+        && request.resource.data.createdBy == request.auth.uid;
+      allow read, update, delete: if isOrgMember(orgId);
+
+      match /members/{uid} {
+        // Creator can write self as owner during registration bootstrap.
+        allow create: if signedIn()
+          && (
+            (uid == request.auth.uid && request.resource.data.role == 'owner')
+            || isOrgMember(orgId)
+          );
+        allow read, update, delete: if isOrgMember(orgId);
+      }
+
+      match /{document=**} {
+        allow read, write: if isOrgMember(orgId);
+      }
+    }
+  }
+}
