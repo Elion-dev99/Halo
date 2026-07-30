@@ -14,6 +14,8 @@ import {
   writeBatch,
 } from "firebase/firestore";
 import { auth, db } from "@/config/firebase";
+import { appendDefaultAccountsToBatch } from "@/services/accountService";
+import { appendFiscalYearPeriodsToBatch } from "@/services/periodService";
 import type { UserProfile } from "@/types/models";
 
 export function subscribeAuth(callback: (user: User | null) => void) {
@@ -39,14 +41,21 @@ export async function register(params: {
   const cred = await createUserWithEmailAndPassword(auth, email, password);
   await updateProfile(cred.user, { displayName });
 
+  const fiscalYearStartMonth = 4;
   const orgRef = doc(collection(db, "organizations"));
   const userRef = doc(db, "users", cred.user.uid);
-  const memberRef = doc(db, "organizations", orgRef.id, "members", cred.user.uid);
+  const memberRef = doc(
+    db,
+    "organizations",
+    orgRef.id,
+    "members",
+    cred.user.uid,
+  );
   const batch = writeBatch(db);
 
   batch.set(orgRef, {
     name: organizationName.trim(),
-    fiscalYearStartMonth: 4,
+    fiscalYearStartMonth,
     currency: "JPY",
     createdAt: serverTimestamp(),
     createdBy: cred.user.uid,
@@ -66,6 +75,9 @@ export async function register(params: {
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
+
+  appendDefaultAccountsToBatch(batch, orgRef.id);
+  appendFiscalYearPeriodsToBatch(batch, orgRef.id, fiscalYearStartMonth);
 
   await batch.commit();
   return { user: cred.user, orgId: orgRef.id };

@@ -37,3 +37,55 @@ export interface OrgMember {
   displayName?: string;
   joinedAt: Date;
 }
+
+export interface Account {
+  id: string;
+  code: string;
+  name: string;
+  type: AccountType;
+  normalBalance: NormalBalance;
+  parentId: string | null;
+  isPostable: boolean;
+  isActive: boolean;
+  sortOrder: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface AccountInput {
+  code: string;
+  name: string;
+  type: AccountType;
+  normalBalance: NormalBalance;
+  parentId: string | null;
+  isPostable: boolean;
+  isActive: boolean;
+  sortOrder: number;
+}
+
+export interface AccountingPeriod {
+  id: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+  status: PeriodStatus;
+  createdAt: Date;
+  closedAt?: Date;
+  closedBy?: string;
+}
+
+export const ACCOUNT_TYPE_LABELS: Record<AccountType, string> = {
+  asset: "資産",
+  liability: "負債",
+  equity: "純資産",
+  revenue: "収益",
+  expense: "費用",
+};
+
+export const DEFAULT_NORMAL_BALANCE: Record<AccountType, NormalBalance> = {
+  asset: "debit",
+  liability: "credit",
+  equity: "credit",
+  revenue: "credit",
+  expense: "debit",
+};
